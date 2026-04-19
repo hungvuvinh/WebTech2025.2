@@ -4,27 +4,25 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document(collection = "customers")
-public class Customer {
-
+@Document(collection = "sellers")
+public class Seller {
     @Id
     @JsonProperty("_id")
     private String id;
 
-    @JsonProperty("customer_name")
-    private String customerName;
+    @JsonProperty("seller_name")
+    private String sellerName;
 
     private String email;
 
     @JsonProperty("phone_number")
     private String phoneNumber;
 
-    public Customer() {
-    }
+    public Seller() {}
 
-    public Customer(String id, String customerName, String email, String phoneNumber) {
+    public Seller(String id, String sellerName, String email, String phoneNumber) {
         this.id = id;
-        this.customerName = customerName;
+        this.sellerName = sellerName;
         this.email = email;
         this.phoneNumber = phoneNumber;
     }
@@ -37,12 +35,12 @@ public class Customer {
         this.id = id;
     }
 
-    public String getCustomerName() {
-        return customerName;
+    public String getSellerName() {
+        return sellerName;
     }
 
-    public void setCustomerName(String customerName) {
-        this.customerName = customerName;
+    public void setSellerName(String sellerName) {
+        this.sellerName = sellerName;
     }
 
     public String getEmail() {
@@ -61,3 +59,4 @@ public class Customer {
         this.phoneNumber = phoneNumber;
     }
 }
+
