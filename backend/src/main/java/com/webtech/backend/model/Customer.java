@@ -1,6 +1,8 @@
 package com.webtech.backend.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -11,11 +13,15 @@ public class Customer {
     @JsonProperty("_id")
     private String id;
 
+    @NotBlank
     @JsonProperty("customer_name")
     private String customerName;
 
+    @NotBlank
+    @Email
     private String email;
 
+    @NotBlank
     @JsonProperty("phone_number")
     private String phoneNumber;
 
