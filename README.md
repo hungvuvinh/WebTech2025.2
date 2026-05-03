@@ -199,9 +199,3 @@ Dự án dùng Lombok. Trong `pom.xml` đã cấu hình **`maven-compiler-plugin
 
 - CORS cho **`/api/**`** được bật trong `WebConfig` (phục vụ frontend dev).  
 - Forward SPA từ `WebConfig` không che các mapping REST cụ thể hơn; API ưu tiên xử lý bởi controller.
-
----
-
-## Liên hệ / Báo lỗi
-
-Nộp issue hoặc liên hệ nhóm theo thông tin môn học.
