@@ -1,5 +1,6 @@
 package com.webtech.backend.controller;
 
+import com.webtech.backend.dto.OrderStatisticsResponse;
 import com.webtech.backend.dto.UpdateOrderStatusRequest;
 import com.webtech.backend.model.Order;
 import com.webtech.backend.service.SellerOrderService;
@@ -26,6 +27,11 @@ public class SellerOrderController {
     @GetMapping
     public List<Order> list(@PathVariable String sellerId) {
         return sellerOrderService.listOrdersForSeller(sellerId);
+    }
+
+    @GetMapping("/statistics")
+    public OrderStatisticsResponse statistics(@PathVariable String sellerId) {
+        return sellerOrderService.getOrderStatisticsForSeller(sellerId);
     }
 
     @GetMapping("/{orderId}")
