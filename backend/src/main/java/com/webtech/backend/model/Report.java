@@ -6,25 +6,14 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
 
-@Document(collection = "customers")
+@Document(collection = "reports")
 @Getter
 @Setter
 @NoArgsConstructor
-public class Customer implements MongoDocument {
+public class Report implements MongoDocument {
 
     @Id
     @JsonProperty("_id")
     private String id;
-
-    @Field("customer_name")
-    @JsonProperty("customer_name")
-    private String customerName;
-
-    private String email;
-
-    @Field("phone_number")
-    @JsonProperty("phone_number")
-    private String phoneNumber;
 }

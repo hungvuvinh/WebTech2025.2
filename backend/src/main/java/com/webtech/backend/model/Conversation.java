@@ -8,23 +8,27 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
-@Document(collection = "customers")
+import java.time.Instant;
+
+@Document(collection = "conversations")
 @Getter
 @Setter
 @NoArgsConstructor
-public class Customer implements MongoDocument {
+public class Conversation implements MongoDocument {
 
     @Id
     @JsonProperty("_id")
     private String id;
 
-    @Field("customer_name")
-    @JsonProperty("customer_name")
-    private String customerName;
+    @Field("created_at")
+    @JsonProperty("created_at")
+    private Instant createdAt;
 
-    private String email;
+    @Field("customer_id")
+    @JsonProperty("customer_id")
+    private String customerId;
 
-    @Field("phone_number")
-    @JsonProperty("phone_number")
-    private String phoneNumber;
+    @Field("seller_id")
+    @JsonProperty("seller_id")
+    private String sellerId;
 }

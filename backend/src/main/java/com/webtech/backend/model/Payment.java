@@ -8,23 +8,21 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
-@Document(collection = "customers")
+@Document(collection = "payment")
 @Getter
 @Setter
 @NoArgsConstructor
-public class Customer implements MongoDocument {
+public class Payment implements MongoDocument {
 
     @Id
     @JsonProperty("_id")
     private String id;
 
-    @Field("customer_name")
-    @JsonProperty("customer_name")
-    private String customerName;
+    private String method;
 
-    private String email;
+    @Field("order_id")
+    @JsonProperty("order_id")
+    private String orderId;
 
-    @Field("phone_number")
-    @JsonProperty("phone_number")
-    private String phoneNumber;
+    private String status;
 }
