@@ -7,8 +7,10 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ConversationRepository extends MongoRepository<Conversation, String> {
-    List<Conversation> findByCustomerId(String customerId);
-    List<Conversation> findBySellerId(String sellerId);
-    Optional<Conversation> findByCustomerIdAndSellerId(String customerId, String sellerId);
-}
 
+    Optional<Conversation> findByCustomerIdAndSellerId(String customerId, String sellerId);
+
+    List<Conversation> findByCustomerIdOrderByCreatedAtDesc(String customerId);
+
+    List<Conversation> findBySellerIdOrderByCreatedAtDesc(String sellerId);
+}

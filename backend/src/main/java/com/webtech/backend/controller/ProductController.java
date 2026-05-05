@@ -1,26 +1,26 @@
 package com.webtech.backend.controller;
 
-import com.webtech.backend.model.Report;
-import com.webtech.backend.repository.ReportRepository;
+import com.webtech.backend.model.Product;
+import com.webtech.backend.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/reports")
+@RequestMapping("/api/products")
 @RequiredArgsConstructor
-public class ReportController extends AbstractMongoCrudController<Report> {
+public class ProductController extends AbstractMongoCrudController<Product> {
 
-    private final ReportRepository reportRepository;
+    private final ProductRepository productRepository;
 
     @Override
-    protected MongoRepository<Report, String> repository() {
-        return reportRepository;
+    protected MongoRepository<Product, String> repository() {
+        return productRepository;
     }
 
     @Override
     protected String resourceLabel() {
-        return "Report";
+        return "Product";
     }
 }

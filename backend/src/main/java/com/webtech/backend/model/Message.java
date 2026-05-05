@@ -1,88 +1,40 @@
 package com.webtech.backend.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
-import java.util.Date;
+import java.time.Instant;
 
 @Document(collection = "messages")
-public class Message {
+@Getter
+@Setter
+@NoArgsConstructor
+public class Message implements MongoDocument {
+
     @Id
     @JsonProperty("_id")
     private String id;
 
     private String content;
 
+    @Field("conversation_id")
     @JsonProperty("conversation_id")
     private String conversationId;
 
+    @Field("sender_id")
     @JsonProperty("sender_id")
     private String senderId;
 
+    @Field("sender_type")
     @JsonProperty("sender_type")
     private String senderType;
 
+    @Field("time_stamp")
     @JsonProperty("time_stamp")
-    private Date timeStamp;
-
-    public Message() {}
-
-    public Message(String id, String content, String conversationId, String senderId, String senderType, Date timeStamp) {
-        this.id = id;
-        this.content = content;
-        this.conversationId = conversationId;
-        this.senderId = senderId;
-        this.senderType = senderType;
-        this.timeStamp = timeStamp;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
-
-    public String getConversationId() {
-        return conversationId;
-    }
-
-    public void setConversationId(String conversationId) {
-        this.conversationId = conversationId;
-    }
-
-    public String getSenderId() {
-        return senderId;
-    }
-
-    public void setSenderId(String senderId) {
-        this.senderId = senderId;
-    }
-
-    public String getSenderType() {
-        return senderType;
-    }
-
-    public void setSenderType(String senderType) {
-        this.senderType = senderType;
-    }
-
-    public Date getTimeStamp() {
-        return timeStamp;
-    }
-
-    public void setTimeStamp(Date timeStamp) {
-        this.timeStamp = timeStamp;
-    }
+    private Instant timeStamp;
 }
-

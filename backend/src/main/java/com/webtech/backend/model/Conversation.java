@@ -1,65 +1,34 @@
 package com.webtech.backend.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
-import java.util.Date;
+import java.time.Instant;
 
 @Document(collection = "conversations")
-public class Conversation {
+@Getter
+@Setter
+@NoArgsConstructor
+public class Conversation implements MongoDocument {
+
     @Id
     @JsonProperty("_id")
     private String id;
 
+    @Field("created_at")
     @JsonProperty("created_at")
-    private Date createdAt;
+    private Instant createdAt;
 
+    @Field("customer_id")
     @JsonProperty("customer_id")
     private String customerId;
 
+    @Field("seller_id")
     @JsonProperty("seller_id")
     private String sellerId;
-
-    public Conversation() {}
-
-    public Conversation(String id, Date createdAt, String customerId, String sellerId) {
-        this.id = id;
-        this.createdAt = createdAt;
-        this.customerId = customerId;
-        this.sellerId = sellerId;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public Date getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public String getCustomerId() {
-        return customerId;
-    }
-
-    public void setCustomerId(String customerId) {
-        this.customerId = customerId;
-    }
-
-    public String getSellerId() {
-        return sellerId;
-    }
-
-    public void setSellerId(String sellerId) {
-        this.sellerId = sellerId;
-    }
 }
-

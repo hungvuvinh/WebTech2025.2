@@ -1,62 +1,37 @@
 package com.webtech.backend.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 @Document(collection = "products")
-public class Product {
+@Getter
+@Setter
+@NoArgsConstructor
+public class Product implements MongoDocument {
+
     @Id
     @JsonProperty("_id")
     private String id;
 
     private String brand;
 
+    @Field("category_id")
     @JsonProperty("category_id")
     private String categoryId;
 
+    @Field("product_name")
     @JsonProperty("product_name")
     private String productName;
 
-    public Product() {}
-
-    public Product(String id, String brand, String categoryId, String productName) {
-        this.id = id;
-        this.brand = brand;
-        this.categoryId = categoryId;
-        this.productName = productName;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getBrand() {
-        return brand;
-    }
-
-    public void setBrand(String brand) {
-        this.brand = brand;
-    }
-
-    public String getCategoryId() {
-        return categoryId;
-    }
-
-    public void setCategoryId(String categoryId) {
-        this.categoryId = categoryId;
-    }
-
-    public String getProductName() {
-        return productName;
-    }
-
-    public void setProductName(String productName) {
-        this.productName = productName;
-    }
+    /**
+     * Người bán sở hữu sản phẩm (mở rộng schema để hỗ trợ quản lý đơn theo seller).
+     */
+    @Field("seller_id")
+    @JsonProperty("seller_id")
+    private String sellerId;
 }
-
