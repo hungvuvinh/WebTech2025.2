@@ -1,7 +1,7 @@
 package com.webtech.backend.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.webtech.backend.model.Cart;
+import com.webtech.backend.model.CartItem;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -15,7 +15,7 @@ public class CartUpsertRequest {
 
     @NotNull(message = "item is required")
     @JsonProperty("item")
-    private List<Cart.CartItem> item;
+    private List<CartItem> item;
 
     public CartUpsertRequest() {}
 
@@ -27,11 +27,11 @@ public class CartUpsertRequest {
         this.customerId = customerId;
     }
 
-    public List<Cart.CartItem> getItem() {
+    public List<CartItem> getItem() {
         return item;
     }
 
-    public void setItem(List<Cart.CartItem> item) {
+    public void setItem(List<CartItem> item) {
         this.item = item;
     }
 }

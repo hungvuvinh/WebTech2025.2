@@ -1,7 +1,7 @@
 package com.webtech.backend.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.webtech.backend.model.Order;
+import com.webtech.backend.model.OrderItem;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -15,7 +15,7 @@ public class OrderUpsertRequest {
     private String customerId;
 
     @NotNull(message = "items is required")
-    private List<Order.OrderItem> items;
+    private List<OrderItem> items;
 
     @JsonProperty("order_date")
     private Date orderDate;
@@ -41,11 +41,11 @@ public class OrderUpsertRequest {
         this.customerId = customerId;
     }
 
-    public List<Order.OrderItem> getItems() {
+    public List<OrderItem> getItems() {
         return items;
     }
 
-    public void setItems(List<Order.OrderItem> items) {
+    public void setItems(List<OrderItem> items) {
         this.items = items;
     }
 

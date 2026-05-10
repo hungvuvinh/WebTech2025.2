@@ -1,120 +1,111 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
+import { useEffect, useMemo, useState } from 'react'
 import './App.css'
 
+const FALLBACK_CATEGORIES = [
+  'Điện thoại',
+  'Laptop',
+  'Phụ kiện',
+  'Đồng hồ',
+  'Gia dụng',
+]
+
+const FALLBACK_PRODUCTS = [
+  { id: 'p1', name: 'Sản phẩm 1' },
+  { id: 'p2', name: 'Sản phẩm 2' },
+  { id: 'p3', name: 'Sản phẩm 3' },
+  { id: 'p4', name: 'Sản phẩm 4' },
+  { id: 'p5', name: 'Sản phẩm 5' },
+]
+
 function App() {
-  const [count, setCount] = useState(0)
+  const [categories, setCategories] = useState(FALLBACK_CATEGORIES)
+  const [products, setProducts] = useState(FALLBACK_PRODUCTS)
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [categoryRes, productRes] = await Promise.all([
+          fetch('/api/categories'),
+          fetch('/api/products'),
+        ])
+
+        if (categoryRes.ok) {
+          const categoryData = await categoryRes.json()
+          if (Array.isArray(categoryData) && categoryData.length > 0) {
+            setCategories(
+              categoryData.map(
+                (item) =>
+                  item.category_name || item.categoryName || item.name || 'Thể loại'
+              )
+            )
+          }
+        }
+
+        if (productRes.ok) {
+          const productData = await productRes.json()
+          if (Array.isArray(productData) && productData.length > 0) {
+            setProducts(productData)
+          }
+        }
+      } catch (error) {
+        // Keep fallback data when backend is not available.
+      }
+    }
+
+    loadData()
+  }, [])
+
+  const productCards = useMemo(() => {
+    return products.slice(0, 5).map((product, index) => ({
+      id: product.id || product._id || `product-${index}`,
+      name:
+        product.name ||
+        product.product_name ||
+        product.productName ||
+        product.title ||
+        `Sản phẩm ${index + 1}`,
+    }))
+  }, [products])
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <div className="page">
+      <header className="header">
+        <div className="logo">Logo</div>
+        <input className="search" placeholder="Thanh tìm kiếm" />
+        <div className="actions">
+          <button>Giỏ hàng</button>
+          <button>Đăng nhập</button>
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+      </header>
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
+      <main className="content">
+        <aside className="categories">
+          <h3>Danh sách thể loại</h3>
           <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
+            {categories.slice(0, 8).map((category, index) => (
+              <li key={`${category}-${index}`}>{category}</li>
+            ))}
           </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+        </aside>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+        <section className="products">
+          <div className="product-grid">
+            {productCards.map((product) => (
+              <article key={product.id} className="product-card">
+                {product.name}
+              </article>
+            ))}
+          </div>
+          <div className="dots">
+            <span />
+            <span />
+            <span />
+          </div>
+        </section>
+      </main>
+
+      <button className="chat-btn">Chat</button>
+    </div>
   )
 }
 
