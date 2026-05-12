@@ -73,7 +73,7 @@ function App() {
         <div className="logo">Logo</div>
         <input className="search" placeholder="Thanh tìm kiếm" />
         <div className="actions">
-          <button>Giỏ hàng</button>
+          <button><img src="cart-icon.png" alt="Giỏ hàng"/></button>
           <button>Đăng nhập</button>
         </div>
       </header>
@@ -96,7 +96,7 @@ function App() {
               </article>
             ))}
           </div>
-          <div className="dots">
+          <div className="pagination">
             <span />
             <span />
             <span />
