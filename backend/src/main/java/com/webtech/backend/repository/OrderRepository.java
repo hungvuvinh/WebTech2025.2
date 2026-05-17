@@ -11,4 +11,6 @@ public interface OrderRepository extends MongoRepository<Order, String> {
 
     @Query("{ 'items.product_id': { $in: ?0 } }")
     List<Order> findByItemsProductIdIn(Collection<String> productIds);
+
+    List<Order> findByCustomerId(String customerId);
 }
