@@ -5,6 +5,7 @@ import com.webtech.backend.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -50,5 +51,10 @@ public class ProductController extends AbstractMongoCrudController<Product> {
             p5.setProductName("Sản phẩm 5");
             return List.of(p1, p2, p3, p4, p5);
         }
+    }
+
+    @GetMapping("/seller/{sellerId}")
+    public List<Product> listBySeller(@PathVariable String sellerId) {
+        return productRepository.findBySellerId(sellerId);
     }
 }

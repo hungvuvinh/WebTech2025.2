@@ -1,11 +1,68 @@
-body {
-  margin: 0;
-  font-family: Arial, Helvetica, sans-serif;
-  background: #f5f5f5;
-  color: #111;
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-tiki: var(--tiki-blue);
+  --color-tiki-light: var(--tiki-blue-light);
+  --color-page: var(--page-bg);
 }
 
-#root {
-  max-width: 1200px;
-  margin: 0 auto;
+/* Theme Tiki: xanh #1A94FF, nền #F5F5FA */
+:root {
+  --radius: 0.5rem;
+  --tiki-blue: #1a94ff;
+  --tiki-blue-dark: #0b74e5;
+  --tiki-blue-light: #e8f4ff;
+  --page-bg: #f5f5fa;
+  --background: #f5f5fa;
+  --foreground: #242424;
+  --card: #ffffff;
+  --card-foreground: #242424;
+  --popover: #ffffff;
+  --popover-foreground: #242424;
+  --primary: #1a94ff;
+  --primary-foreground: #ffffff;
+  --secondary: #e8f4ff;
+  --secondary-foreground: #0b74e5;
+  --muted: #f0f0f5;
+  --muted-foreground: #787878;
+  --accent: #e8f4ff;
+  --accent-foreground: #0b74e5;
+  --destructive: #ff424e;
+  --border: #ebebf0;
+  --input: #ebebf0;
+  --ring: #1a94ff;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-page text-foreground antialiased;
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  }
 }

@@ -2,6 +2,7 @@ package com.webtech.backend.service;
 
 import com.webtech.backend.exception.ResourceNotFoundException;
 import com.webtech.backend.model.Order;
+import com.webtech.backend.model.OrderShippingStatuses;
 import com.webtech.backend.repository.OrderRepository;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +29,10 @@ public class OrderService {
 
     public List<Order> findByCustomerId(String customerId) {
         return orderRepository.findByCustomerId(customerId);
+    }
+
+    public List<Order> findInTransitByCustomerId(String customerId) {
+        return orderRepository.findByCustomerIdAndStatusIn(customerId, OrderShippingStatuses.IN_TRANSIT);
     }
 
     public Order create(Order order) {

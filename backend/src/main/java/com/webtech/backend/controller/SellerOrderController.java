@@ -34,6 +34,12 @@ public class SellerOrderController {
         return sellerOrderService.getOrderStatisticsForSeller(sellerId);
     }
 
+    /** Đơn đang vận chuyển (CONFIRMED, SHIPPED) có sản phẩm của seller. */
+    @GetMapping("/in-transit")
+    public List<Order> listInTransit(@PathVariable String sellerId) {
+        return sellerOrderService.listInTransitOrdersForSeller(sellerId);
+    }
+
     @GetMapping("/{orderId}")
     public Order get(@PathVariable String sellerId, @PathVariable String orderId) {
         return sellerOrderService.getOrderForSeller(sellerId, orderId);

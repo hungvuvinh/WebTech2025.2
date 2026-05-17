@@ -6,6 +6,7 @@ import com.webtech.backend.exception.ForbiddenException;
 import com.webtech.backend.exception.ResourceNotFoundException;
 import com.webtech.backend.model.Order;
 import com.webtech.backend.model.OrderItem;
+import com.webtech.backend.model.OrderShippingStatuses;
 import com.webtech.backend.model.Product;
 import com.webtech.backend.repository.OrderRepository;
 import com.webtech.backend.repository.ProductRepository;
@@ -39,6 +40,12 @@ public class SellerOrderService {
             return List.of();
         }
         return orderRepository.findByItemsProductIdIn(productIds);
+    }
+
+    public List<Order> listInTransitOrdersForSeller(String sellerId) {
+        return listOrdersForSeller(sellerId).stream()
+                .filter(o -> OrderShippingStatuses.isInTransit(o.getStatus()))
+                .toList();
     }
 
     public Order getOrderForSeller(String sellerId, String orderId) {
