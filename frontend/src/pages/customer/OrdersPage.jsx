@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { LogOut } from 'lucide-react'
 import { toast } from 'sonner'
+import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { OrderCard } from '@/components/orders/OrderCard'
 import { ShopPage, ShopPanel } from '@/components/layout/ShopPage'
@@ -8,7 +10,7 @@ import { useAuth } from '@/context/AuthContext'
 import { api } from '@/lib/api'
 
 export function OrdersPage() {
-  const { userId, isCustomer } = useAuth()
+  const { userId, isCustomer, logout, userName } = useAuth()
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const tab = searchParams.get('tab') === 'shipping' ? 'shipping' : 'all'
@@ -38,7 +40,24 @@ export function OrdersPage() {
   return (
     <ShopPage>
       <ShopPanel>
-        <h1 className="mb-4 text-2xl font-bold">Theo dõi đơn hàng</h1>
+        <div className="mb-4 flex items-start justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-bold">Theo dõi đơn hàng</h1>
+            <p className="mt-1 text-sm text-muted-foreground">Xin chào, {userName || 'khách hàng'}</p>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            className="border-[#1A94FF] text-[#1A94FF] hover:bg-[#e8f4ff] hover:text-[#0b74e5]"
+            onClick={() => {
+              logout()
+              navigate('/login', { replace: true })
+            }}
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Đăng xuất
+          </Button>
+        </div>
         <Tabs
           value={tab}
           onValueChange={(v) => setSearchParams(v === 'shipping' ? { tab: 'shipping' } : {})}

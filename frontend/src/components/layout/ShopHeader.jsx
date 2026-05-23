@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { Home, Search, ShoppingCart, Truck, User } from 'lucide-react'
+import { Home, LogOut, Search, ShoppingCart, Truck, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useAuth } from '@/context/AuthContext'
@@ -12,7 +12,7 @@ const TRUST_ITEMS = ['100% hàng thật', 'Freeship mọi đơn', 'Giao nhanh', 
 export function ShopHeader() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const { isLoggedIn, isCustomer, userName } = useAuth()
+  const { isLoggedIn, isCustomer, userName, logout } = useAuth()
   const [q, setQ] = useState(searchParams.get('q') || '')
 
   const onSearch = (e) => {
@@ -75,24 +75,24 @@ export function ShopHeader() {
               <ShoppingCart className="h-6 w-6" />
               <span>Giỏ hàng</span>
             </Link>
+            {isLoggedIn && (
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => {
+                  logout()
+                  navigate('/login', { replace: true })
+                }}
+                className="flex flex-col items-center gap-0.5 text-xs text-[#1A94FF] hover:bg-transparent hover:text-[#0b74e5]"
+              >
+                <LogOut className="h-6 w-6" />
+                <span>Đăng xuất</span>
+              </Button>
+            )}
           </div>
         </div>
 
-        <div className="mt-1 hidden flex-wrap gap-x-3 pb-2 text-xs text-muted-foreground md:flex">
-          {HOT_KEYWORDS.map((kw) => (
-            <button
-              key={kw}
-              type="button"
-              onClick={() => {
-                setQ(kw)
-                navigate(`/?q=${encodeURIComponent(kw)}`)
-              }}
-              className="hover:text-[#1A94FF]"
-            >
-              {kw}
-            </button>
-          ))}
-        </div>
+        {/* quick keyword links removed as requested */}
       </div>
 
       <div className="border-t border-[#ebebf0] bg-[#f5f5fa]">

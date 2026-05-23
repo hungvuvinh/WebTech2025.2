@@ -1,5 +1,7 @@
 package com.webtech.backend.exception;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -13,6 +15,17 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
+
+    private static final Logger logger = LoggerFactory.getLogger(ApiExceptionHandler.class);
+
+    @ExceptionHandler(ApiException.class)
+    public ResponseEntity<?> handleApi(ApiException ex) {
+        Map<String, Object> body = errorBody(ex.getStatus().value(), ex.getMessage());
+        if (ex.getFieldErrors() != null) {
+            body.put("errors", ex.getFieldErrors());
+        }
+        return ResponseEntity.status(ex.getStatus()).body(body);
+    }
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<?> handleNotFound(NotFoundException ex) {
@@ -32,8 +45,9 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> handleOther(Exception ex) {
+        logger.error("Unhandled exception", ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(errorBody(500, "Internal server error"));
+            .body(errorBody(500, "Internal server error"));
     }
 
     private Map<String, Object> errorBody(int status, String message) {

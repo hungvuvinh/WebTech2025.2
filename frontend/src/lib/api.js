@@ -19,8 +19,9 @@ async function request(path, options = {}) {
   })
   if (!res.ok) {
     let message = res.statusText
+    let body = null
     try {
-      const body = await res.json()
+      body = await res.json()
       message = body.message || body.error || JSON.stringify(body)
     } catch {
       try {
@@ -29,7 +30,9 @@ async function request(path, options = {}) {
         /* ignore */
       }
     }
-    throw new Error(message || `HTTP ${res.status}`)
+    const err = new Error(message || `HTTP ${res.status}`)
+    if (body) err.body = body
+    throw err
   }
   if (res.status === 204) return null
   const text = await res.text()
@@ -54,6 +57,22 @@ export const api = {
   // --- Tài khoản demo (login chọn list) ---
   customers: () => request('/customers'),
   sellers: () => request('/sellers'),
+
+  // --- Xác thực ---
+  auth: {
+    register: (body) => {
+      // backend expects snake_case keys: user_name, phone_number
+      const payload = {
+        user_name: body.userName,
+        email: body.email,
+        phone_number: body.phoneNumber,
+        password: body.password,
+        role: body.role,
+      }
+      return request('/auth/register', { method: 'POST', body: JSON.stringify(payload) })
+    },
+    login: (body) => request('/auth/login', { method: 'POST', body: JSON.stringify(body) }),
+  },
 
   // --- Giỏ & thanh toán ---
   cart: (customerId) => request(`/carts/customer/${customerId}`),

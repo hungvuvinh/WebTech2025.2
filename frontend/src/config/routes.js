@@ -45,10 +45,10 @@ export const PUBLIC_ROUTES = [
     path: '/login',
     id: 'login',
     label: 'Đăng nhập',
-    useCase: 'Chọn vai trò + tài khoản demo (chưa có JWT)',
+    useCase: 'Đăng ký hoặc đăng nhập bằng email/mật khẩu',
     component: 'LoginPage',
     file: 'pages/LoginPage.jsx',
-    api: ['GET /api/customers', 'GET /api/sellers'],
+    api: ['POST /api/auth/register', 'POST /api/auth/login'],
   },
 ]
 

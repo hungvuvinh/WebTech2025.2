@@ -1,12 +1,8 @@
 /**
- * Xác thực demo (chưa JWT).
+ * Xác thực ứng dụng.
  *
  * localStorage key: webtech_auth
  * Shape: { role: 'customer'|'seller', userId: string, userName: string }
- *
- * Dev sau: thay login() bằng gọi API auth, lưu accessToken, gắn header trong api.js
- *
- * @see frontend/TODO.md — P0 Đăng nhập thật
  */
 
 import { createContext, useContext, useMemo, useState } from 'react'
