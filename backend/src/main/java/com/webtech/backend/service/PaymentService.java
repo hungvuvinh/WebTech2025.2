@@ -1,6 +1,7 @@
 package com.webtech.backend.service;
 
 import com.webtech.backend.dto.CheckoutRequest;
+import com.webtech.backend.dto.VnpayCheckoutResponse;
 import com.webtech.backend.exception.ResourceNotFoundException;
 import com.webtech.backend.model.Cart;
 import com.webtech.backend.model.CartItem;
@@ -11,6 +12,7 @@ import com.webtech.backend.model.ProductVariant;
 import com.webtech.backend.repository.OrderRepository;
 import com.webtech.backend.repository.PaymentRepository;
 import com.webtech.backend.repository.ProductVariantRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,16 +27,19 @@ public class PaymentService {
     private final OrderRepository orderRepository;
     private final CartService cartService;
     private final ProductVariantRepository productVariantRepository;
+    private final VnpayGatewayService vnpayGatewayService;
 
     public PaymentService(
             PaymentRepository paymentRepository,
             OrderRepository orderRepository,
             CartService cartService,
-            ProductVariantRepository productVariantRepository) {
+            ProductVariantRepository productVariantRepository,
+            VnpayGatewayService vnpayGatewayService) {
         this.paymentRepository = paymentRepository;
         this.orderRepository = orderRepository;
         this.cartService = cartService;
         this.productVariantRepository = productVariantRepository;
+        this.vnpayGatewayService = vnpayGatewayService;
     }
 
     public List<Payment> findAll() {
@@ -76,6 +81,71 @@ public class PaymentService {
 
     @Transactional
     public Order checkout(CheckoutRequest request) {
+        Order savedOrder = createOrderFromCart(request, "CREATED", true);
+
+        createPayment(request.getMethod(), savedOrder.getId(), "PAID");
+        cartService.clearCart(request.getCustomerId());
+
+        return savedOrder;
+    }
+
+    @Transactional
+    public VnpayCheckoutResponse checkoutWithVnpay(CheckoutRequest request) {
+        Order savedOrder = createOrderFromCart(request, "PENDING", false);
+        Payment payment = createPayment("VNPAY", savedOrder.getId(), "PENDING");
+        String paymentUrl = vnpayGatewayService.buildPaymentUrl(savedOrder, payment, null);
+
+        return new VnpayCheckoutResponse(
+                savedOrder.getId(),
+                payment.getId(),
+            paymentUrl,
+                savedOrder.getStatus(),
+                payment.getStatus()
+        );
+    }
+
+    @Transactional
+    public Order confirmVnpayPayment(String paymentId, boolean success) {
+        Payment payment = findById(paymentId);
+        Order order = orderRepository.findById(payment.getOrderId())
+                .orElseThrow(() -> new ResourceNotFoundException("Order", payment.getOrderId()));
+
+        if (success) {
+            if ("PAID".equalsIgnoreCase(payment.getStatus())) {
+                return order;
+            }
+
+            try {
+                deductStockForOrder(order);
+            } catch (RuntimeException ex) {
+                payment.setStatus("FAILED");
+                order.setStatus("CANCELLED");
+                paymentRepository.save(payment);
+                orderRepository.save(order);
+                throw ex;
+            }
+
+            payment.setStatus("PAID");
+            order.setStatus("CREATED");
+            paymentRepository.save(payment);
+            orderRepository.save(order);
+            cartService.clearCart(order.getCustomerId());
+            return order;
+        }
+
+        payment.setStatus("CANCELLED");
+        order.setStatus("CANCELLED");
+        paymentRepository.save(payment);
+        orderRepository.save(order);
+        return order;
+    }
+
+    @Transactional
+    public Order confirmVnpayCallback(String paymentId, boolean success) {
+        return confirmVnpayPayment(paymentId, success);
+    }
+
+    private Order createOrderFromCart(CheckoutRequest request, String status, boolean deductStock) {
         Cart cart = cartService.findByCustomerId(request.getCustomerId())
                 .orElseThrow(() -> new ResourceNotFoundException("Cart", request.getCustomerId()));
 
@@ -90,7 +160,6 @@ public class PaymentService {
         List<OrderItem> orderItems = new ArrayList<>();
         long total = 0L;
 
-        // Process each cart item
         for (CartItem ci : items) {
             ProductVariant pv = null;
             if (ci.getProductVariantId() != null) {
@@ -100,8 +169,11 @@ public class PaymentService {
             int unitPrice = pv != null && pv.getPrice() != null ? pv.getPrice() : 0;
             int qty = ci.getQuantity() != null ? ci.getQuantity() : 0;
 
-            // Check stock availability
-            if (pv != null) {
+            if (qty <= 0) {
+                throw new IllegalArgumentException("Quantity must be greater than zero");
+            }
+
+            if (deductStock && pv != null) {
                 int stock = pv.getStockQuantity() != null ? pv.getStockQuantity() : 0;
                 if (stock < qty) {
                     throw new IllegalStateException("Insufficient stock for product variant: " + ci.getProductVariantId());
@@ -117,8 +189,7 @@ public class PaymentService {
 
             total += (long) unitPrice * qty;
 
-            // Deduct stock
-            if (pv != null) {
+            if (deductStock && pv != null) {
                 int stock = pv.getStockQuantity() != null ? pv.getStockQuantity() : 0;
                 pv.setStockQuantity(Math.max(0, stock - qty));
                 productVariantRepository.save(pv);
@@ -128,21 +199,41 @@ public class PaymentService {
         order.setItems(orderItems);
         order.setOrderDate(Instant.now());
         order.setShippingAddress(request.getShippingAddress());
-        order.setStatus("CREATED");
+        order.setStatus(status);
         order.setTotalAmount(String.valueOf(total));
+        return orderRepository.save(order);
+    }
 
-        Order savedOrder = orderRepository.save(order);
-
-        // Create payment record
+    private Payment createPayment(String method, String orderId, String status) {
         Payment payment = new Payment();
-        payment.setMethod(request.getMethod());
-        payment.setOrderId(savedOrder.getId());
-        payment.setStatus("PAID");
-        paymentRepository.save(payment);
+        payment.setMethod(method);
+        payment.setOrderId(orderId);
+        payment.setStatus(status);
+        return paymentRepository.save(payment);
+    }
 
-        // Clear cart
-        cartService.clearCart(request.getCustomerId());
+    private void deductStockForOrder(Order order) {
+        List<OrderItem> items = order.getItems();
+        if (items == null || items.isEmpty()) {
+            return;
+        }
 
-        return savedOrder;
+        for (OrderItem item : items) {
+            if (item.getProductVariantId() == null) {
+                continue;
+            }
+
+            ProductVariant pv = productVariantRepository.findById(item.getProductVariantId())
+                    .orElseThrow(() -> new ResourceNotFoundException("ProductVariant", item.getProductVariantId()));
+
+            int qty = item.getQuantity() != null ? Integer.parseInt(item.getQuantity()) : 0;
+            int stock = pv.getStockQuantity() != null ? pv.getStockQuantity() : 0;
+            if (stock < qty) {
+                throw new IllegalStateException("Insufficient stock for product variant: " + item.getProductVariantId());
+            }
+
+            pv.setStockQuantity(stock - qty);
+            productVariantRepository.save(pv);
+        }
     }
 }

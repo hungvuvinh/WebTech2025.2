@@ -4,6 +4,7 @@ import com.webtech.backend.model.Order;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 
@@ -15,4 +16,6 @@ public interface OrderRepository extends MongoRepository<Order, String> {
     List<Order> findByCustomerId(String customerId);
 
     List<Order> findByCustomerIdAndStatusIn(String customerId, Collection<String> statuses);
+
+    List<Order> findByStatusAndOrderDateLessThanEqual(String status, Instant orderDate);
 }

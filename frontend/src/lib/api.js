@@ -80,6 +80,9 @@ export const api = {
     request(`/carts/${customerId}/items`, { method: 'POST', body: JSON.stringify(item) }),
 
   checkout: (body) => request('/payments/checkout', { method: 'POST', body: JSON.stringify(body) }),
+  checkoutVnpay: (body) => request('/payments/vnpay/checkout', { method: 'POST', body: JSON.stringify(body) }),
+  confirmVnpayPayment: (body) =>
+    request('/payments/vnpay/confirm', { method: 'POST', body: JSON.stringify(body) }),
 
   // --- Đơn hàng khách ---
   ordersByCustomer: (customerId) => request(`/orders/customer/${customerId}`),

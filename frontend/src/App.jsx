@@ -19,6 +19,8 @@ import { ProductDetailPage } from '@/pages/customer/ProductDetailPage'
 import { CartPage } from '@/pages/customer/CartPage'
 import { CheckoutPage } from '@/pages/customer/CheckoutPage'
 import { OrdersPage } from '@/pages/customer/OrdersPage'
+import { VnpayPaymentPage } from '@/pages/customer/VnpayPaymentPage'
+import { VnpayReturnPage } from '@/pages/customer/VnpayReturnPage'
 import { ChatPage } from '@/pages/ChatPage'
 import { SellerProductsPage } from '@/pages/seller/SellerProductsPage'
 import { SellerOrdersPage } from '@/pages/seller/SellerOrdersPage'
@@ -35,6 +37,8 @@ export default function App() {
             <Route path="/products/:id" element={<ProductDetailPage />} />
             <Route path="/cart" element={<ProtectedRoute role="customer"><CartPage /></ProtectedRoute>} />
             <Route path="/checkout" element={<ProtectedRoute role="customer"><CheckoutPage /></ProtectedRoute>} />
+            <Route path="/payment/vnpay/return" element={<VnpayReturnPage />} />
+            <Route path="/payment/vnpay" element={<ProtectedRoute role="customer"><VnpayPaymentPage /></ProtectedRoute>} />
             <Route path="/orders" element={<ProtectedRoute role="customer"><OrdersPage /></ProtectedRoute>} />
             <Route path="/chat" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
             <Route path="/seller/products" element={<ProtectedRoute role="seller"><SellerProductsPage /></ProtectedRoute>} />

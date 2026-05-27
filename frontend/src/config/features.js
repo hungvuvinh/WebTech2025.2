@@ -1,10 +1,3 @@
-/**
- * TRẠNG THÁI TÍNH NĂNG — cập nhật khi hoàn thành hoặc bàn giao việc mới.
- * Giá trị status: 'done' | 'partial' | 'todo'
- *
- * Dev tiếp theo: ưu tiên các mục status !== 'done'
- */
-
 export const FEATURE_MATRIX = {
   customer: {
     browseAndSearch: {
@@ -25,7 +18,7 @@ export const FEATURE_MATRIX = {
     checkout: {
       status: 'done',
       route: '/checkout',
-      notes: 'Gọi POST /api/payments/checkout.',
+      notes: 'Gọi POST /api/payments/checkout hoặc /api/payments/vnpay/checkout.',
     },
     orderTracking: {
       status: 'done',

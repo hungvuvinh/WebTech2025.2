@@ -74,7 +74,27 @@ export const CUSTOMER_ROUTES = [
     useCase: 'Chọn sản phẩm & thanh toán (bước 2)',
     component: 'CheckoutPage',
     file: 'pages/customer/CheckoutPage.jsx',
-    api: ['POST /api/payments/checkout'],
+    api: ['POST /api/payments/checkout', 'POST /api/payments/vnpay/checkout'],
+    nav: false,
+  },
+  {
+    path: '/payment/vnpay',
+    id: 'vnpay-payment',
+    label: 'VNPay sandbox',
+    useCase: 'Xác nhận thanh toán qua VNPay sandbox',
+    component: 'VnpayPaymentPage',
+    file: 'pages/customer/VnpayPaymentPage.jsx',
+    api: ['POST /api/payments/vnpay/confirm'],
+    nav: false,
+  },
+  {
+    path: '/payment/vnpay/return',
+    id: 'vnpay-return',
+    label: 'VNPay return',
+    useCase: 'Trang callback sau khi VNPay trả kết quả',
+    component: 'VnpayReturnPage',
+    file: 'pages/customer/VnpayReturnPage.jsx',
+    api: ['GET /api/payments/vnpay/return'],
     nav: false,
   },
   {
@@ -154,7 +174,7 @@ export const SHARED_ROUTES = [
   },
 ]
 
-/** Menu cửa hàng cho khách (chưa đăng nhập vẫn thấy) */
+/** Menu cửa hàng cho người chưa đăng nhập*/
 export const CUSTOMER_STORE_NAV = {
   path: '/',
   label: 'Cửa hàng',

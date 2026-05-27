@@ -13,7 +13,7 @@ export function CheckoutPage() {
   const { userId, isCustomer } = useAuth()
   const navigate = useNavigate()
   const [address, setAddress] = useState('')
-  const [method, setMethod] = useState('COD')
+  const [method, setMethod] = useState('VNPAY')
   const [loading, setLoading] = useState(false)
 
   if (!isCustomer) {
@@ -26,13 +26,22 @@ export function CheckoutPage() {
     if (!address.trim()) return toast.error('Nhập địa chỉ giao hàng')
     setLoading(true)
     try {
-      const order = await api.checkout({
+      const body = {
         customer_id: userId,
         method,
         shipping_address: address,
-      })
+      }
+
+      if (method === 'VNPAY') {
+        const result = await api.checkoutVnpay(body)
+        toast.info('Đang mở cổng VNPay sandbox...')
+        window.location.assign(result.paymentUrl)
+        return
+      }
+
+      const order = await api.checkout(body)
       toast.success('Thanh toán thành công')
-      navigate(`/orders`, { state: { newOrderId: order._id || order.id } })
+      navigate('/orders', { state: { newOrderId: order._id || order.id } })
     } catch (err) {
       toast.error(err.message)
     } finally {
@@ -59,13 +68,15 @@ export function CheckoutPage() {
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="COD">Tiền mặt (COD)</SelectItem>
-                  <SelectItem value="BANK">Chuyển khoản</SelectItem>
-                  <SelectItem value="CARD">Thẻ</SelectItem>
+                  <SelectItem value="VNPAY">VNPay sandbox</SelectItem>
                 </SelectContent>
               </Select>
+              <p className="text-xs text-muted-foreground">
+                Chọn VNPay sandbox để mở cổng thanh toán thật từ cấu hình backend.
+              </p>
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Đang xử lý...' : 'Xác nhận thanh toán'}
+              {loading ? 'Đang xử lý...' : method === 'VNPAY' ? 'Đi tới VNPay sandbox' : 'Xác nhận thanh toán'}
             </Button>
           </form>
         </CardContent>
