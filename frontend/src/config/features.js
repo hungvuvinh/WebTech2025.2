@@ -23,7 +23,7 @@ export const FEATURE_MATRIX = {
     orderTracking: {
       status: 'done',
       route: '/orders',
-      notes: 'Danh sách đơn theo customer_id.',
+      notes: 'Danh sách đơn theo customer_id + trang chi tiết đơn hàng.',
     },
     reviews: {
       status: 'done',
@@ -36,9 +36,9 @@ export const FEATURE_MATRIX = {
       notes: 'POST /api/reports. Seller chưa có UI xem báo cáo.',
     },
     chat: {
-      status: 'partial',
+      status: 'done',
       route: '/chat',
-      notes: 'Polling 5s. Chưa WebSocket / chưa hiện tên shop đầy đủ.',
+      notes: 'WebSocket real-time + hiện tên shop đầy đủ.',
     },
   },
   seller: {
@@ -50,7 +50,7 @@ export const FEATURE_MATRIX = {
     orderManagement: {
       status: 'done',
       route: '/seller/orders',
-      notes: 'PATCH trạng thái đơn.',
+      notes: 'PATCH trạng thái đơn + trang chi tiết đơn hàng.',
     },
     statistics: {
       status: 'done',

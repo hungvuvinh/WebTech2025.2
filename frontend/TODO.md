@@ -23,7 +23,7 @@ Cập nhật file này khi nhận hoặc hoàn thành task. Tham chiếu thêm `
   - `GET /api/categories` đã có
   - File: `pages/seller/SellerProductsPage.jsx`
 
-- [ ] **Hiển thị tên khách/seller trong Chat** (thay vì `slice(-6)` id)
+- [x] **Hiển thị tên khách/seller trong Chat** (thay vì `slice(-6)` id)
   - Fetch `customers` / `sellers` map id → name
   - File: `pages/ChatPage.jsx`
 
@@ -31,9 +31,9 @@ Cập nhật file này khi nhận hoặc hoàn thành task. Tham chiếu thêm `
 
 ## P2 — Cải thiện nghiệp vụ
 
-- [ ] **Chat real-time** (WebSocket hoặc SSE) — bỏ `setInterval` 5s
+- [x] **Chat real-time** (WebSocket hoặc SSE) — bỏ `setInterval` 5s
 - [ ] **Trang seller: danh sách báo cáo lỗi SP** (`GET /api/reports` + filter)
-- [ ] **Trang chi tiết đơn hàng** (khách + seller) thay vì chỉ list
+- [x] **Trang chi tiết đơn hàng** (khách + seller) thay vì chỉ list
 - [ ] **Error boundary** + trang 404 custom
 
 ---

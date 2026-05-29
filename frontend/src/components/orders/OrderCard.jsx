@@ -1,4 +1,5 @@
 import { Truck } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatDate, formatPrice, idOf } from '@/lib/utils'
@@ -13,11 +14,16 @@ const badgeClass = {
   CANCELLED: 'bg-destructive text-white hover:bg-destructive',
 }
 
-export function OrderCard({ order, extra, actions }) {
+export function OrderCard({ order, extra, actions, clickable = false, sellerView = false }) {
+  const navigate = useNavigate()
   const inTransit = isInTransit(order.status)
 
   return (
-    <Card className={inTransit ? 'border-[#1A94FF]/40 ring-1 ring-[#1A94FF]/20' : ''}>
+    <Card
+      className={inTransit ? 'border-[#1A94FF]/40 ring-1 ring-[#1A94FF]/20' : ''}
+      onClick={clickable ? () => navigate(sellerView ? `/seller/orders/${idOf(order)}` : `/orders/${idOf(order)}`) : undefined}
+      style={clickable ? { cursor: 'pointer' } : undefined}
+    >
       <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
         <CardTitle className="flex items-center gap-2 text-base">
           {inTransit && <Truck className="h-4 w-4 text-[#1A94FF]" />}

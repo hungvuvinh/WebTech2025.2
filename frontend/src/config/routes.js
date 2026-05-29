@@ -108,6 +108,16 @@ export const CUSTOMER_ROUTES = [
     nav: true,
     icon: 'Package',
   },
+  {
+    path: '/orders/:id',
+    id: 'order-detail',
+    label: 'Chi tiết đơn hàng',
+    useCase: 'Xem chi tiết đơn hàng',
+    component: 'OrderDetailPage',
+    file: 'pages/customer/OrderDetailPage.jsx',
+    api: ['GET /api/orders/:id'],
+    nav: false,
+  },
 ]
 
 /**
@@ -142,6 +152,19 @@ export const SELLER_ROUTES = [
     ],
     nav: true,
     icon: 'Package',
+  },
+  {
+    path: '/seller/orders/:id',
+    id: 'seller-order-detail',
+    label: 'Chi tiết đơn hàng',
+    useCase: 'Xem chi tiết đơn hàng',
+    component: 'SellerOrderDetailPage',
+    file: 'pages/seller/SellerOrderDetailPage.jsx',
+    api: [
+      'GET /api/sellers/:sellerId/orders/:orderId',
+      'PATCH /api/sellers/:sellerId/orders/:orderId/status',
+    ],
+    nav: false,
   },
   {
     path: '/seller/statistics',

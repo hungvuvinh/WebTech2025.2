@@ -103,6 +103,8 @@ export function SellerOrdersPage() {
                 order={o}
                 extra={<p>Khách hàng: …{o.customer_id?.slice(-8)}</p>}
                 actions={renderActions(o)}
+                clickable
+                sellerView
               />
             ))
           )}
@@ -122,6 +124,8 @@ export function SellerOrdersPage() {
                 order={o}
                 extra={<p>Khách hàng: …{o.customer_id?.slice(-8)}</p>}
                 actions={renderActions(o)}
+                clickable
+                sellerView
               />
             ))
           )}

@@ -77,7 +77,7 @@ export function OrdersPage() {
             ) : allOrders.length === 0 ? (
               <p className="text-muted-foreground">Chưa có đơn hàng nào</p>
             ) : (
-              allOrders.map((o) => <OrderCard key={o._id || o.id} order={o} />)
+              allOrders.map((o) => <OrderCard key={o._id || o.id} order={o} clickable />)
             )}
           </TabsContent>
 
@@ -89,7 +89,7 @@ export function OrdersPage() {
                 Không có đơn đang vận chuyển. Đơn sẽ hiện ở đây khi người bán xác nhận hoặc chuyển sang trạng thái giao hàng.
               </p>
             ) : (
-              shippingOrders.map((o) => <OrderCard key={o._id || o.id} order={o} />)
+              shippingOrders.map((o) => <OrderCard key={o._id || o.id} order={o} clickable />)
             )}
           </TabsContent>
         </Tabs>
