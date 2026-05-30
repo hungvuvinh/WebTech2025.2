@@ -63,7 +63,7 @@ export const CUSTOMER_ROUTES = [
     useCase: 'Chọn sản phẩm & thanh toán (bước 1)',
     component: 'CartPage',
     file: 'pages/customer/CartPage.jsx',
-    api: ['GET /api/carts/customer/:customerId'],
+    api: ['GET /api/carts/customer/:customerId', 'POST /api/carts/:customerId/items', 'DELETE /api/carts/:customerId/items/:productVariantId'],
     nav: true,
     icon: 'ShoppingCart',
   },

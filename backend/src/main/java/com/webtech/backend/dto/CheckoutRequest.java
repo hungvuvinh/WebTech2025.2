@@ -3,6 +3,8 @@ package com.webtech.backend.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 
+import java.util.List;
+
 public class CheckoutRequest {
 
     @NotBlank(message = "customer_id is required")
@@ -15,6 +17,9 @@ public class CheckoutRequest {
     @NotBlank(message = "shipping_address is required")
     @JsonProperty("shipping_address")
     private String shippingAddress;
+
+    @JsonProperty("selected_product_variant_ids")
+    private List<String> selectedProductVariantIds;
 
     public CheckoutRequest() {}
 
@@ -40,5 +45,13 @@ public class CheckoutRequest {
 
     public void setShippingAddress(String shippingAddress) {
         this.shippingAddress = shippingAddress;
+    }
+
+    public List<String> getSelectedProductVariantIds() {
+        return selectedProductVariantIds;
+    }
+
+    public void setSelectedProductVariantIds(List<String> selectedProductVariantIds) {
+        this.selectedProductVariantIds = selectedProductVariantIds;
     }
 }

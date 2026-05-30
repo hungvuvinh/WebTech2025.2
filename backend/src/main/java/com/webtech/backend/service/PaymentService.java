@@ -18,7 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class PaymentService {
@@ -84,7 +86,7 @@ public class PaymentService {
         Order savedOrder = createOrderFromCart(request, "CREATED", true);
 
         createPayment(request.getMethod(), savedOrder.getId(), "PAID");
-        cartService.clearCart(request.getCustomerId());
+        cartService.removeItems(request.getCustomerId(), toCartItems(savedOrder.getItems()));
 
         return savedOrder;
     }
@@ -129,7 +131,7 @@ public class PaymentService {
             order.setStatus("CREATED");
             paymentRepository.save(payment);
             orderRepository.save(order);
-            cartService.clearCart(order.getCustomerId());
+            cartService.removeItems(order.getCustomerId(), toCartItems(order.getItems()));
             return order;
         }
 
@@ -154,6 +156,11 @@ public class PaymentService {
             throw new IllegalArgumentException("Cart is empty");
         }
 
+        Set<String> selectedVariantIds = null;
+        if (request.getSelectedProductVariantIds() != null && !request.getSelectedProductVariantIds().isEmpty()) {
+            selectedVariantIds = new HashSet<>(request.getSelectedProductVariantIds());
+        }
+
         Order order = new Order();
         order.setCustomerId(request.getCustomerId());
 
@@ -161,6 +168,10 @@ public class PaymentService {
         long total = 0L;
 
         for (CartItem ci : items) {
+            if (selectedVariantIds != null && !selectedVariantIds.contains(ci.getProductVariantId())) {
+                continue;
+            }
+
             ProductVariant pv = null;
             if (ci.getProductVariantId() != null) {
                 pv = productVariantRepository.findById(ci.getProductVariantId()).orElse(null);
@@ -194,6 +205,10 @@ public class PaymentService {
                 pv.setStockQuantity(Math.max(0, stock - qty));
                 productVariantRepository.save(pv);
             }
+        }
+
+        if (orderItems.isEmpty()) {
+            throw new IllegalArgumentException("No selected cart items found");
         }
 
         order.setItems(orderItems);
@@ -235,5 +250,22 @@ public class PaymentService {
             pv.setStockQuantity(stock - qty);
             productVariantRepository.save(pv);
         }
+    }
+
+    private List<CartItem> toCartItems(List<OrderItem> orderItems) {
+        List<CartItem> cartItems = new ArrayList<>();
+        if (orderItems == null || orderItems.isEmpty()) {
+            return cartItems;
+        }
+
+        for (OrderItem orderItem : orderItems) {
+            CartItem cartItem = new CartItem();
+            cartItem.setProductId(orderItem.getProductId());
+            cartItem.setProductVariantId(orderItem.getProductVariantId());
+            cartItem.setQuantity(orderItem.getQuantity() != null ? Integer.parseInt(orderItem.getQuantity()) : 0);
+            cartItems.add(cartItem);
+        }
+
+        return cartItems;
     }
 }

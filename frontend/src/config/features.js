@@ -11,14 +11,14 @@ export const FEATURE_MATRIX = {
       notes: 'Cần product-variant có price + stock trước khi mua.',
     },
     cart: {
-      status: 'partial',
+      status: 'done',
       route: '/cart',
-      notes: 'Chưa có xóa/sửa số lượng từng dòng giỏ (API chưa có endpoint riêng).',
+      notes: 'Đã có xóa từng dòng, đổi số lượng, và chọn item để thanh toán.',
     },
     checkout: {
       status: 'done',
       route: '/checkout',
-      notes: 'Gọi POST /api/payments/checkout hoặc /api/payments/vnpay/checkout.',
+      notes: 'Gửi selected_product_variant_ids khi checkout; hỗ trợ POST /api/payments/checkout hoặc /api/payments/vnpay/checkout.',
     },
     orderTracking: {
       status: 'done',
@@ -96,7 +96,7 @@ export const NEXT_TASKS = [
   },
   {
     priority: 'P1',
-    task: 'Giỏ hàng: sửa/xóa item (cần API backend hoặc PUT cart)',
+    task: 'Giỏ hàng: thêm tổng tiền theo item đã chọn',
     files: ['pages/customer/CartPage.jsx', 'lib/api.js'],
   },
   {

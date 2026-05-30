@@ -78,6 +78,10 @@ export const api = {
   cart: (customerId) => request(`/carts/customer/${customerId}`),
   addCartItem: (customerId, item) =>
     request(`/carts/${customerId}/items`, { method: 'POST', body: JSON.stringify(item) }),
+  updateCartItemQuantity: (customerId, productVariantId, item) =>
+    request(`/carts/${customerId}/items/${productVariantId}`, { method: 'PUT', body: JSON.stringify(item) }),
+  removeCartItem: (customerId, productVariantId) =>
+    request(`/carts/${customerId}/items/${productVariantId}`, { method: 'DELETE' }),
 
   checkout: (body) => request('/payments/checkout', { method: 'POST', body: JSON.stringify(body) }),
   checkoutVnpay: (body) => request('/payments/vnpay/checkout', { method: 'POST', body: JSON.stringify(body) }),

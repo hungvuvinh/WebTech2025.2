@@ -7,9 +7,11 @@ import com.webtech.backend.service.CartService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -42,6 +44,23 @@ public class CartController extends AbstractMongoCrudController<Cart> {
     @PostMapping("/{customerId}/items")
     public ResponseEntity<Cart> addItem(@PathVariable String customerId, @RequestBody CartItem item) {
         Cart cart = cartService.addItem(customerId, item);
+        return ResponseEntity.ok(cart);
+    }
+
+    @DeleteMapping("/{customerId}/items/{productVariantId}")
+    public ResponseEntity<Cart> deleteItem(
+            @PathVariable String customerId,
+            @PathVariable String productVariantId) {
+        Cart cart = cartService.removeItem(customerId, productVariantId);
+        return ResponseEntity.ok(cart);
+    }
+
+    @PutMapping("/{customerId}/items/{productVariantId}")
+    public ResponseEntity<Cart> updateItemQuantity(
+            @PathVariable String customerId,
+            @PathVariable String productVariantId,
+            @RequestBody CartItem item) {
+        Cart cart = cartService.updateItemQuantity(customerId, productVariantId, item);
         return ResponseEntity.ok(cart);
     }
 }

@@ -47,7 +47,93 @@ public class CartService {
         if (cart.getItem() == null) {
             cart.setItem(new ArrayList<>());
         }
+
+        for (CartItem existing : cart.getItem()) {
+            if (sameCartLine(existing, item)) {
+                int currentQuantity = existing.getQuantity() != null ? existing.getQuantity() : 0;
+                int addedQuantity = item.getQuantity() != null ? item.getQuantity() : 0;
+                existing.setQuantity(currentQuantity + addedQuantity);
+                return cartRepository.save(cart);
+            }
+        }
+
         cart.getItem().add(item);
+        return cartRepository.save(cart);
+    }
+
+    public Cart removeItem(String customerId, String productVariantId) {
+        Cart cart = getOrCreateCart(customerId);
+        List<CartItem> items = cart.getItem();
+        if (items == null || items.isEmpty()) {
+            return cart;
+        }
+
+        items.removeIf(item -> productVariantId.equals(item.getProductVariantId()));
+        return cartRepository.save(cart);
+    }
+
+    public Cart updateItemQuantity(String customerId, String productVariantId, CartItem item) {
+        Cart cart = getOrCreateCart(customerId);
+        if (cart.getItem() == null) {
+            cart.setItem(new ArrayList<>());
+        }
+
+        int quantity = item != null && item.getQuantity() != null ? item.getQuantity() : 0;
+        if (quantity <= 0) {
+            return removeItem(customerId, productVariantId);
+        }
+
+        for (CartItem current : cart.getItem()) {
+            if (!productVariantId.equals(current.getProductVariantId())) {
+                continue;
+            }
+
+            current.setQuantity(quantity);
+            if (item != null && item.getProductId() != null) {
+                current.setProductId(item.getProductId());
+            }
+            return cartRepository.save(cart);
+        }
+
+        CartItem newItem = new CartItem();
+        newItem.setProductId(item != null ? item.getProductId() : null);
+        newItem.setProductVariantId(productVariantId);
+        newItem.setQuantity(quantity);
+        cart.getItem().add(newItem);
+        return cartRepository.save(cart);
+    }
+
+    public Cart removeItems(String customerId, List<CartItem> purchasedItems) {
+        Cart cart = getOrCreateCart(customerId);
+        List<CartItem> items = cart.getItem();
+        if (items == null || items.isEmpty() || purchasedItems == null || purchasedItems.isEmpty()) {
+            return cart;
+        }
+
+        for (CartItem purchased : purchasedItems) {
+            int remaining = purchased.getQuantity() != null ? purchased.getQuantity() : 0;
+            if (remaining <= 0) {
+                continue;
+            }
+
+            for (int i = 0; i < items.size() && remaining > 0; i++) {
+                CartItem current = items.get(i);
+                if (!sameCartLine(current, purchased)) {
+                    continue;
+                }
+
+                int currentQuantity = current.getQuantity() != null ? current.getQuantity() : 0;
+                if (currentQuantity <= remaining) {
+                    remaining -= currentQuantity;
+                    items.remove(i);
+                    i--;
+                } else {
+                    current.setQuantity(currentQuantity - remaining);
+                    remaining = 0;
+                }
+            }
+        }
+
         return cartRepository.save(cart);
     }
 
@@ -70,5 +156,15 @@ public class CartService {
     public void delete(String id) {
         Cart cart = findById(id);
         cartRepository.delete(cart);
+    }
+
+    private boolean sameCartLine(CartItem left, CartItem right) {
+        if (left == null || right == null) {
+            return false;
+        }
+
+        return left.getProductVariantId() != null
+                && left.getProductVariantId().equals(right.getProductVariantId())
+                && (left.getProductId() == null ? right.getProductId() == null : left.getProductId().equals(right.getProductId()));
     }
 }
