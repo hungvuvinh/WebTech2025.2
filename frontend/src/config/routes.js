@@ -42,6 +42,15 @@ export const PUBLIC_ROUTES = [
     ],
   },
   {
+    path: '/sellers/:id',
+    id: 'seller-page',
+    label: 'Người bán',
+    useCase: "Xem trang cửa hàng của người bán và sản phẩm",
+    component: 'SellerPage',
+    file: 'pages/customer/SellerPage.jsx',
+    api: ['GET /api/products/seller/:sellerId', 'GET /api/sellers'],
+  },
+  {
     path: '/login',
     id: 'login',
     label: 'Đăng nhập',
@@ -97,6 +106,7 @@ export const CUSTOMER_ROUTES = [
     api: ['GET /api/payments/vnpay/return'],
     nav: false,
   },
+  
   {
     path: '/orders',
     id: 'orders',

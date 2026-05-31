@@ -34,6 +34,7 @@ export function SellerOrderDetailPage() {
   const navigate = useNavigate()
   const { id } = useParams()
   const [order, setOrder] = useState(null)
+  const [productNames, setProductNames] = useState({})
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -49,6 +50,17 @@ export function SellerOrderDetailPage() {
     try {
       const data = await api.sellerOrder(userId, id)
       setOrder(data)
+      // fetch product names for items
+      const ids = Array.from(new Set((data.items || []).map((it) => it.product_id).filter(Boolean)))
+      if (ids.length) {
+        const proms = ids.map((pid) => api.product(pid).catch(() => null))
+        const results = await Promise.all(proms)
+        const map = {}
+        results.forEach((p) => {
+          if (p) map[idOf(p)] = p.product_name || p.productName || ''
+        })
+        setProductNames(map)
+      }
     } catch (e) {
       toast.error(e.message || 'Không tải được đơn hàng')
       navigate('/seller/orders')
@@ -129,15 +141,7 @@ export function SellerOrderDetailPage() {
                   ))}
                 </SelectContent>
               </Select>
-              {order.status !== 'SHIPPED' && order.status !== 'COMPLETED' && order.status !== 'CANCELLED' && (
-                <Button
-                  size="sm"
-                  className="bg-[#1A94FF] hover:bg-[#0b74e5]"
-                  onClick={() => updateStatus('SHIPPED')}
-                >
-                  Chuyển sang đang giao
-                </Button>
-              )}
+              {/* 'Chuyển sang đang giao' button removed — status can be changed via selector */}
             </div>
           </CardContent>
         </Card>
@@ -177,7 +181,7 @@ export function SellerOrderDetailPage() {
               {(order.items || []).map((item, i) => (
                 <li key={i} className="flex justify-between border-b border-[#ebebf0] pb-3 last:border-0">
                   <div className="flex-1">
-                    <p className="font-medium">Sản phẩm …{item.product_id?.slice(-6)}</p>
+                    <p className="font-medium">{item.product_name || productNames[item.product_id] || `Sản phẩm …${item.product_id?.slice(-6)}`}</p>
                     <p className="text-sm text-muted-foreground">Số lượng: {item.quantity}</p>
                   </div>
                   <p className="font-semibold">{formatPrice(item.unit_price)}</p>

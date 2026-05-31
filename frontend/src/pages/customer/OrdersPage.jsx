@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { OrderCard } from '@/components/orders/OrderCard'
+import { idOf } from '@/lib/utils'
 import { ShopPage, ShopPanel } from '@/components/layout/ShopPage'
 import { useAuth } from '@/context/AuthContext'
 import { api } from '@/lib/api'
@@ -16,14 +17,33 @@ export function OrdersPage() {
   const tab = searchParams.get('tab') === 'shipping' ? 'shipping' : 'all'
   const [allOrders, setAllOrders] = useState([])
   const [shippingOrders, setShippingOrders] = useState([])
+  const [productNames, setProductNames] = useState({})
   const [loading, setLoading] = useState(true)
 
   const load = () => {
     setLoading(true)
     Promise.all([api.ordersByCustomer(userId), api.ordersInTransitByCustomer(userId)])
-      .then(([all, shipping]) => {
-        setAllOrders(Array.isArray(all) ? all : [])
-        setShippingOrders(Array.isArray(shipping) ? shipping : [])
+      .then(async ([all, shipping]) => {
+        const allArr = Array.isArray(all) ? all : []
+        const shippingArr = Array.isArray(shipping) ? shipping : []
+        setAllOrders(allArr)
+        setShippingOrders(shippingArr)
+
+        // build product id list from both sets and fetch names
+        const ids = Array.from(
+          new Set(
+            allArr.concat(shippingArr).flatMap((o) => (o.items || []).map((it) => it.product_id)).filter(Boolean)
+          )
+        )
+        if (ids.length) {
+          const proms = ids.map((pid) => api.product(pid).catch(() => null))
+          const results = await Promise.all(proms)
+          const map = {}
+          results.forEach((p) => {
+            if (p) map[idOf(p)] = p.product_name || p.productName || ''
+          })
+          setProductNames(map)
+        }
       })
       .catch(() => toast.error('Không tải được đơn hàng'))
       .finally(() => setLoading(false))
@@ -77,7 +97,9 @@ export function OrdersPage() {
             ) : allOrders.length === 0 ? (
               <p className="text-muted-foreground">Chưa có đơn hàng nào</p>
             ) : (
-              allOrders.map((o) => <OrderCard key={o._id || o.id} order={o} clickable />)
+              allOrders.map((o) => (
+                <OrderCard key={o._id || o.id} order={o} clickable productNames={productNames} />
+              ))
             )}
           </TabsContent>
 
@@ -89,7 +111,9 @@ export function OrdersPage() {
                 Không có đơn đang vận chuyển. Đơn sẽ hiện ở đây khi người bán xác nhận hoặc chuyển sang trạng thái giao hàng.
               </p>
             ) : (
-              shippingOrders.map((o) => <OrderCard key={o._id || o.id} order={o} clickable />)
+              shippingOrders.map((o) => (
+                <OrderCard key={o._id || o.id} order={o} clickable productNames={productNames} />
+              ))
             )}
           </TabsContent>
         </Tabs>

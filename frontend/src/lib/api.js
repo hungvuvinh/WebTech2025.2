@@ -57,6 +57,7 @@ export const api = {
   // --- Tài khoản demo (login chọn list) ---
   customers: () => request('/customers'),
   sellers: () => request('/sellers'),
+  seller: (id) => request(`/sellers/${id}`),
 
   // --- Xác thực ---
   auth: {

@@ -16,6 +16,7 @@ import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { LoginPage } from '@/pages/LoginPage'
 import { HomePage } from '@/pages/customer/HomePage'
 import { ProductDetailPage } from '@/pages/customer/ProductDetailPage'
+import { SellerPage } from '@/pages/customer/SellerPage'
 import { CartPage } from '@/pages/customer/CartPage'
 import { CheckoutPage } from '@/pages/customer/CheckoutPage'
 import { OrdersPage } from '@/pages/customer/OrdersPage'
@@ -35,6 +36,7 @@ export default function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/" element={<HomePage />} />
             <Route path="/products/:id" element={<ProductDetailPage />} />
+            <Route path="/sellers/:id" element={<SellerPage />} />
             <Route path="/cart" element={<ProtectedRoute role="customer"><CartPage /></ProtectedRoute>} />
             <Route path="/checkout" element={<ProtectedRoute role="customer"><CheckoutPage /></ProtectedRoute>} />
             <Route path="/payment/vnpay/return" element={<VnpayReturnPage />} />

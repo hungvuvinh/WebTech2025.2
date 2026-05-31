@@ -142,12 +142,17 @@ export function ProductDetailPage() {
               </Button>
             </div>
             {product.seller_id && (
-              <Button variant="outline" className="border-[#1A94FF] text-[#1A94FF]" asChild>
-                <Link to={`/chat?seller_id=${product.seller_id}`}>
-                  <MessageCircle className="h-4 w-4" />
-                  Chat với người bán
-                </Link>
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="outline" className="border-[#1A94FF] text-[#1A94FF]" asChild>
+                  <Link to={`/chat?seller_id=${product.seller_id}`}>
+                    <MessageCircle className="h-4 w-4" />
+                    Chat với người bán
+                  </Link>
+                </Button>
+                <Button variant="ghost" className="text-[#1A94FF]" asChild>
+                  <Link to={`/sellers/${product.seller_id}`}>Xem cửa hàng</Link>
+                </Button>
+              </div>
             )}
           </div>
         </ShopPanel>

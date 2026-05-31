@@ -54,8 +54,9 @@ function NavItems({ links, className }) {
 /** Header cửa hàng cho khách; header riêng cho khu vực người bán */
 function useShopLayout() {
   const { pathname } = useLocation()
-  const { isSeller } = useAuth()
-  if (isSeller || pathname.startsWith('/seller')) return false
+  // Show seller header only for seller dashboard routes (exact '/seller' or '/seller/...').
+  // This avoids matching the public shop route '/sellers/:id' (note the plural).
+  if (/^\/seller(\/|$)/.test(pathname)) return false
   return true
 }
 
@@ -73,13 +74,6 @@ function SellerHeader() {
         </Link>
         <nav className="hidden flex-1 items-center gap-1 md:flex">
           <NavItems links={links} />
-          <Link
-            to="/seller/orders?tab=shipping"
-            className="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-[#1A94FF] hover:bg-[#e8f4ff]"
-          >
-            <Truck className="h-4 w-4" />
-            Đang giao
-          </Link>
         </nav>
         <div className="ml-auto flex items-center gap-2">
           {isLoggedIn && (
