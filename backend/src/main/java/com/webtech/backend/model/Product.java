@@ -34,4 +34,8 @@ public class Product implements MongoDocument {
     @Field("seller_id")
     @JsonProperty("seller_id")
     private String sellerId;
+
+    @Field("img_url")
+    @JsonProperty("img_url")
+    private String imgUrl;
 }

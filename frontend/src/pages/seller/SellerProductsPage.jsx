@@ -24,6 +24,7 @@ const emptyForm = () => ({
   product_name: '',
   brand: '',
   category_id: '',
+  img_url: '',
   variant_name: 'Mặc định',
   price: '',
   stock_quantity: '',
@@ -72,6 +73,7 @@ export function SellerProductsPage() {
       product_name: p.product_name || '',
       brand: p.brand || '',
       category_id: p.category_id || '',
+      img_url: p.img_url || '',
       variant_name: '',
       price: '',
       stock_quantity: '',
@@ -113,6 +115,7 @@ export function SellerProductsPage() {
         product_name: form.product_name.trim(),
         brand: form.brand.trim() || undefined,
         category_id: form.category_id,
+        img_url: form.img_url.trim() || undefined,
         seller_id: userId,
       }
       if (editing) {
@@ -225,6 +228,14 @@ export function SellerProductsPage() {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Hình ảnh (URL Cloudinary)</Label>
+                <Input
+                  value={form.img_url}
+                  onChange={(e) => setForm({ ...form, img_url: e.target.value })}
+                  placeholder="https://res.cloudinary.com/..."
+                />
               </div>
 
               {!editing && (
