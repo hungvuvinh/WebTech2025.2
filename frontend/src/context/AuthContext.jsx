@@ -1,10 +1,3 @@
-/**
- * Xác thực ứng dụng.
- *
- * localStorage key: webtech_auth
- * Shape: { role: 'customer'|'seller', userId: string, userName: string }
- */
-
 import { createContext, useContext, useMemo, useState } from 'react'
 
 const AuthContext = createContext(null)

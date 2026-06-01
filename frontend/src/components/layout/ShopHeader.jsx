@@ -12,7 +12,7 @@ const TRUST_ITEMS = ['100% hàng thật', 'Freeship mọi đơn', 'Giao nhanh', 
 export function ShopHeader() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const { isLoggedIn, isCustomer, userName, logout } = useAuth()
+  const { isLoggedIn, isCustomer, isSeller, userName, logout } = useAuth()
   const [q, setQ] = useState(searchParams.get('q') || '')
 
   const onSearch = (e) => {
@@ -50,13 +50,13 @@ export function ShopHeader() {
               <Home className="h-6 w-6" />
               <span>Trang chủ</span>
             </Link>
-            {isLoggedIn && isCustomer && (
+            {isLoggedIn && isCustomer && !isSeller && (
               <Link
-                to="/orders?tab=shipping"
+                to="/orders"
                 className="flex flex-col items-center gap-0.5 text-xs text-[#1A94FF] hover:opacity-80"
               >
                 <Truck className="h-6 w-6" />
-                <span>Đang giao</span>
+                <span>Đơn hàng</span>
               </Link>
             )}
             <Link

@@ -39,7 +39,9 @@ export function SellerProductsPage() {
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState(null)
   const [form, setForm] = useState(emptyForm())
-  const [variantForm, setVariantForm] = useState({ variant_name: '', price: '', stock_quantity: '' })
+  const [variantForms, setVariantForms] = useState({})
+  const [editingVariantId, setEditingVariantId] = useState(null)
+  const [editingVariantForm, setEditingVariantForm] = useState({ variant_name: '', price: '', stock_quantity: '' })
   const [saving, setSaving] = useState(false)
 
   const load = () => {
@@ -155,19 +157,67 @@ export function SellerProductsPage() {
   }
 
   const addVariant = async (productId) => {
-    if (!variantForm.variant_name.trim() || !variantForm.price) {
+    const vf = variantForms[productId] || { variant_name: '', price: '', stock_quantity: '' }
+    if (!vf.variant_name.trim() || !vf.price) {
       toast.error('Nhập tên biến thể và giá')
       return
     }
     try {
       await api.createVariant({
         product_id: productId,
-        variant_name: variantForm.variant_name.trim(),
-        price: Number(variantForm.price),
-        stock_quantity: Number(variantForm.stock_quantity) || 0,
+        variant_name: vf.variant_name.trim(),
+        price: Number(vf.price),
+        stock_quantity: Number(vf.stock_quantity) || 0,
       })
       toast.success('Đã thêm biến thể')
-      setVariantForm({ variant_name: '', price: '', stock_quantity: '' })
+      // clear only this product's form
+      setVariantForms((prev) => ({ ...prev, [productId]: { variant_name: '', price: '', stock_quantity: '' } }))
+      load()
+    } catch (e) {
+      toast.error(e.message)
+    }
+  }
+
+  const deleteVariant = async (variantId) => {
+    if (!confirm('Xóa biến thể này?')) return
+    try {
+      await api.deleteVariant(variantId)
+      toast.success('Đã xóa biến thể')
+      // if currently editing that variant, cancel edit
+      if (editingVariantId === variantId) cancelEditVariant()
+      load()
+    } catch (e) {
+      toast.error(e.message)
+    }
+  }
+
+  const startEditVariant = (v) => {
+    setEditingVariantId(idOf(v))
+    setEditingVariantForm({ variant_name: v.variant_name || v.variantName || '', price: v.price ?? '', stock_quantity: v.stock_quantity ?? '' })
+  }
+
+  const cancelEditVariant = () => {
+    setEditingVariantId(null)
+    setEditingVariantForm({ variant_name: '', price: '', stock_quantity: '' })
+  }
+
+  const saveVariant = async (variantId) => {
+    if (!editingVariantForm.variant_name.trim() || editingVariantForm.price === '') {
+      toast.error('Nhập tên biến thể và giá')
+      return
+    }
+    try {
+      // merge edited fields into original variant to avoid replacing/removing keys like product_id
+      const original = variants.find((x) => idOf(x) === variantId)
+      const payload = {
+        ...(original || {}),
+        variant_name: editingVariantForm.variant_name.trim(),
+        price: Number(editingVariantForm.price),
+        stock_quantity: Number(editingVariantForm.stock_quantity) || 0,
+      }
+      await api.updateVariant(variantId, payload)
+      toast.success('Đã cập nhật biến thể')
+      cancelEditVariant()
       load()
     } catch (e) {
       toast.error(e.message)
@@ -312,8 +362,46 @@ export function SellerProductsPage() {
                   <ul className="space-y-1 text-sm">
                     {pVariants.map((v) => (
                       <li key={idOf(v)} className="rounded bg-[#f5f5fa] px-2 py-1">
-                        {v.variant_name} — <span className="font-semibold text-[#FF424E]">{formatPrice(v.price)}</span>{' '}
-                        (tồn: {v.stock_quantity ?? 0})
+                        {editingVariantId === idOf(v) ? (
+                          <div className="flex items-center gap-2">
+                            <Input
+                              className="w-36"
+                              value={editingVariantForm.variant_name}
+                              onChange={(e) => setEditingVariantForm({ ...editingVariantForm, variant_name: e.target.value })}
+                            />
+                            <Input
+                              className="w-24"
+                              type="number"
+                              value={editingVariantForm.price}
+                              onChange={(e) => setEditingVariantForm({ ...editingVariantForm, price: e.target.value })}
+                            />
+                            <Input
+                              className="w-20"
+                              type="number"
+                              value={editingVariantForm.stock_quantity}
+                              onChange={(e) => setEditingVariantForm({ ...editingVariantForm, stock_quantity: e.target.value })}
+                            />
+                            <div className="flex gap-2">
+                              <Button size="sm" className="bg-[#1A94FF]" onClick={() => saveVariant(idOf(v))}>Lưu</Button>
+                              <Button size="sm" variant="secondary" onClick={cancelEditVariant}>Hủy</Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-between">
+                            <div>
+                              {v.variant_name} — <span className="font-semibold text-[#FF424E]">{formatPrice(v.price)}</span>{' '}
+                              (tồn: {v.stock_quantity ?? 0})
+                            </div>
+                            <div className="flex gap-2">
+                              <Button size="icon" variant="outline" onClick={() => startEditVariant(v)}>
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button size="icon" variant="destructive" onClick={() => deleteVariant(idOf(v))}>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        )}
                       </li>
                     ))}
                     {pVariants.length === 0 && (
@@ -321,29 +409,37 @@ export function SellerProductsPage() {
                     )}
                   </ul>
                   <div className="flex flex-wrap gap-2 border-t pt-3">
-                    <Input
-                      className="w-28"
-                      placeholder="Tên variant"
-                      value={variantForm.variant_name}
-                      onChange={(e) => setVariantForm({ ...variantForm, variant_name: e.target.value })}
-                    />
-                    <Input
-                      className="w-24"
-                      placeholder="Giá"
-                      type="number"
-                      value={variantForm.price}
-                      onChange={(e) => setVariantForm({ ...variantForm, price: e.target.value })}
-                    />
-                    <Input
-                      className="w-20"
-                      placeholder="Tồn"
-                      type="number"
-                      value={variantForm.stock_quantity}
-                      onChange={(e) => setVariantForm({ ...variantForm, stock_quantity: e.target.value })}
-                    />
-                    <Button size="sm" variant="secondary" onClick={() => addVariant(idOf(p))}>
-                      + Thêm biến thể
-                    </Button>
+                    {(() => {
+                      const pid = idOf(p)
+                      const vf = variantForms[pid] || { variant_name: '', price: '', stock_quantity: '' }
+                      return (
+                        <>
+                          <Input
+                            className="w-28"
+                            placeholder="Tên variant"
+                            value={vf.variant_name}
+                            onChange={(e) => setVariantForms((prev) => ({ ...prev, [pid]: { ...vf, variant_name: e.target.value } }))}
+                          />
+                          <Input
+                            className="w-24"
+                            placeholder="Giá"
+                            type="number"
+                            value={vf.price}
+                            onChange={(e) => setVariantForms((prev) => ({ ...prev, [pid]: { ...vf, price: e.target.value } }))}
+                          />
+                          <Input
+                            className="w-20"
+                            placeholder="Tồn"
+                            type="number"
+                            value={vf.stock_quantity}
+                            onChange={(e) => setVariantForms((prev) => ({ ...prev, [pid]: { ...vf, stock_quantity: e.target.value } }))}
+                          />
+                          <Button size="sm" variant="secondary" onClick={() => addVariant(pid)}>
+                            + Thêm biến thể
+                          </Button>
+                        </>
+                      )
+                    })()}
                   </div>
                 </CardContent>
               </Card>

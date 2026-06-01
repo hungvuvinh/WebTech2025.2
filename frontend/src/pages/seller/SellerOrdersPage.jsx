@@ -17,14 +17,18 @@ export function SellerOrdersPage() {
   const tab = searchParams.get('tab') === 'shipping' ? 'shipping' : 'all'
   const [allOrders, setAllOrders] = useState([])
   const [shippingOrders, setShippingOrders] = useState([])
+    const [productNames, setProductNames] = useState({})
   const [loading, setLoading] = useState(true)
 
   const load = () => {
     setLoading(true)
-    Promise.all([api.sellerOrders(userId), api.sellerOrdersInTransit(userId)])
-      .then(([all, shipping]) => {
+    Promise.all([api.sellerOrders(userId), api.sellerOrdersInTransit(userId), api.productsBySeller(userId)])
+      .then(([all, shipping, products]) => {
         setAllOrders(Array.isArray(all) ? all : [])
         setShippingOrders(Array.isArray(shipping) ? shipping : [])
+        const map = {}
+        ;(products || []).forEach((p) => (map[idOf(p)] = p.product_name || p.productName || ''))
+        setProductNames(map)
       })
       .catch(() => toast.error('Không tải được đơn hàng'))
       .finally(() => setLoading(false))
@@ -63,15 +67,6 @@ export function SellerOrdersPage() {
           ))}
         </SelectContent>
       </Select>
-      {o.status !== 'SHIPPED' && o.status !== 'COMPLETED' && o.status !== 'CANCELLED' && (
-        <Button
-          size="sm"
-          className="bg-[#1A94FF] hover:bg-[#0b74e5]"
-          onClick={() => updateStatus(idOf(o), 'SHIPPED')}
-        >
-          Chuyển sang đang giao
-        </Button>
-      )}
     </div>
   )
 
@@ -94,7 +89,7 @@ export function SellerOrdersPage() {
         <TabsContent value="all" className="mt-4 space-y-4">
           {loading ? (
             <p className="text-muted-foreground">Đang tải...</p>
-          ) : allOrders.length === 0 ? (
+            ) : allOrders.length === 0 ? (
             <p className="text-muted-foreground">Chưa có đơn hàng. Cần có sản phẩm và khách đặt mua.</p>
           ) : (
             allOrders.map((o) => (
@@ -105,18 +100,17 @@ export function SellerOrdersPage() {
                 actions={renderActions(o)}
                 clickable
                 sellerView
+                productNames={productNames}
               />
             ))
           )}
         </TabsContent>
 
         <TabsContent value="shipping" className="mt-4 space-y-4">
-          {loading ? (
+            {loading ? (
             <p className="text-muted-foreground">Đang tải...</p>
           ) : shippingOrders.length === 0 ? (
-            <p className="text-muted-foreground">
-              Chưa có đơn đang vận chuyển. Dùng nút &quot;Chuyển sang đang giao&quot; hoặc chọn trạng thái SHIPPED.
-            </p>
+            <p className="text-muted-foreground">Chưa có đơn đang vận chuyển.</p>
           ) : (
             shippingOrders.map((o) => (
               <OrderCard
@@ -126,6 +120,7 @@ export function SellerOrdersPage() {
                 actions={renderActions(o)}
                 clickable
                 sellerView
+                productNames={productNames}
               />
             ))
           )}
