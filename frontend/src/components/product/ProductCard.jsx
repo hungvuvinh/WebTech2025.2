@@ -16,9 +16,17 @@ export function ProductCard({ product, price }) {
       className="group flex flex-col overflow-hidden rounded-lg bg-white shadow-sm transition-shadow hover:shadow-md"
     >
       <div className="relative flex aspect-square items-center justify-center bg-gradient-to-br from-[#e8f4ff] to-[#f5f5fa] p-4">
-        <div className="flex h-24 w-24 items-center justify-center rounded-lg bg-white/80 text-4xl shadow-inner">
-          📦
-        </div>
+        {product.img_url || product.imgUrl ? (
+          <img
+            src={product.img_url || product.imgUrl}
+            alt={name}
+            className="h-24 w-24 object-contain rounded-lg bg-white/80"
+          />
+        ) : (
+          <div className="flex h-24 w-24 items-center justify-center rounded-lg bg-white/80 text-4xl shadow-inner">
+            📦
+          </div>
+        )}
         <Badge className="absolute left-2 top-2 border-0 bg-[#FF424E] text-white hover:bg-[#FF424E]">
           -{discount}%
         </Badge>
