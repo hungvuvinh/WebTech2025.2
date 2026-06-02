@@ -10,6 +10,7 @@ import com.webtech.backend.model.Seller;
 import com.webtech.backend.repository.AuthAccountRepository;
 import com.webtech.backend.repository.CustomerRepository;
 import com.webtech.backend.repository.SellerRepository;
+import com.webtech.backend.security.JwtService;
 import org.bson.types.ObjectId;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
@@ -26,17 +27,20 @@ public class AuthService {
     private final CustomerRepository customerRepository;
     private final SellerRepository sellerRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
     public AuthService(
             AuthAccountRepository authAccountRepository,
             CustomerRepository customerRepository,
             SellerRepository sellerRepository,
-            PasswordEncoder passwordEncoder
+            PasswordEncoder passwordEncoder,
+            JwtService jwtService
     ) {
         this.authAccountRepository = authAccountRepository;
         this.customerRepository = customerRepository;
         this.sellerRepository = sellerRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
 
     public AuthResponse register(AuthRegisterRequest request) {
@@ -145,12 +149,16 @@ public class AuthService {
     }
 
     private AuthResponse toResponse(AuthAccount account) {
+        String token = jwtService.generateToken(account);
         return new AuthResponse(
                 account.getRole(),
                 account.getId(),
                 account.getUserName(),
                 account.getEmail(),
-                account.getPhoneNumber()
+            account.getPhoneNumber(),
+            token,
+            "Bearer",
+            jwtService.getExpirationMs() / 1000
         );
     }
 }

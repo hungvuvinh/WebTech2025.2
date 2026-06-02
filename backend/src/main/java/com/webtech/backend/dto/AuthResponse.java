@@ -12,12 +12,33 @@ public class AuthResponse {
     @JsonProperty("phone_number")
     private final String phoneNumber;
 
-    public AuthResponse(String role, String userId, String userName, String email, String phoneNumber) {
+    @JsonProperty("access_token")
+    private final String accessToken;
+
+    @JsonProperty("token_type")
+    private final String tokenType;
+
+    @JsonProperty("expires_in")
+    private final long expiresIn;
+
+    public AuthResponse(
+            String role,
+            String userId,
+            String userName,
+            String email,
+            String phoneNumber,
+            String accessToken,
+            String tokenType,
+            long expiresIn
+    ) {
         this.role = role;
         this.userId = userId;
         this.userName = userName;
         this.email = email;
         this.phoneNumber = phoneNumber;
+        this.accessToken = accessToken;
+        this.tokenType = tokenType;
+        this.expiresIn = expiresIn;
     }
 
     public String getRole() {
@@ -38,5 +59,17 @@ public class AuthResponse {
 
     public String getPhoneNumber() {
         return phoneNumber;
+    }
+
+    public String getAccessToken() {
+        return accessToken;
+    }
+
+    public String getTokenType() {
+        return tokenType;
+    }
+
+    public long getExpiresIn() {
+        return expiresIn;
     }
 }

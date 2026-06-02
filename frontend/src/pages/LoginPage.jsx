@@ -42,7 +42,7 @@ export function LoginPage() {
     setIsSubmitting(true)
     try {
       const result = await api.auth.login(loginForm)
-      login(result.role, result.userId, result.userName)
+      login(result)
       toast.success('Đăng nhập thành công')
       redirectByRole(navigate, result.role)
     } catch (error) {
@@ -62,7 +62,7 @@ export function LoginPage() {
     setIsSubmitting(true)
     try {
       const result = await api.auth.register(registerForm)
-      login(result.role, result.userId, result.userName)
+      login(result)
       toast.success('Đăng ký thành công')
       redirectByRole(navigate, result.role)
       setRegisterErrors({})

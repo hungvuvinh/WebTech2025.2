@@ -15,8 +15,17 @@ function loadStored() {
 export function AuthProvider({ children }) {
   const [auth, setAuth] = useState(() => loadStored())
 
-  const login = (role, userId, userName) => {
-    const next = { role, userId, userName }
+  const login = (payload) => {
+    const next = {
+      role: payload.role,
+      userId: payload.userId,
+      userName: payload.userName,
+      email: payload.email ?? null,
+      phoneNumber: payload.phoneNumber ?? null,
+      accessToken: payload.accessToken ?? payload.access_token ?? null,
+      tokenType: payload.tokenType ?? payload.token_type ?? 'Bearer',
+      expiresIn: payload.expiresIn ?? payload.expires_in ?? null,
+    }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
     setAuth(next)
   }
@@ -29,10 +38,11 @@ export function AuthProvider({ children }) {
   const value = useMemo(
     () => ({
       auth,
-      isLoggedIn: Boolean(auth?.userId),
+      isLoggedIn: Boolean(auth?.userId && auth?.accessToken),
       role: auth?.role ?? null,
       userId: auth?.userId ?? null,
       userName: auth?.userName ?? null,
+      accessToken: auth?.accessToken ?? null,
       isCustomer: auth?.role === 'customer',
       isSeller: auth?.role === 'seller',
       login,

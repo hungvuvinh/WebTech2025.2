@@ -11,12 +11,30 @@
  */
 
 const API = import.meta.env.VITE_API_BASE || '/api'
+const AUTH_STORAGE_KEY = 'webtech_auth'
+
+function readAuthFromStorage() {
+  try {
+    const raw = localStorage.getItem(AUTH_STORAGE_KEY)
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
+}
 
 async function request(path, options = {}) {
+  const auth = readAuthFromStorage()
+  const accessToken = auth?.accessToken
+
   const res = await fetch(`${API}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...options.headers },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+      ...options.headers,
+    },
     ...options,
   })
+
   if (!res.ok) {
     let message = res.statusText
     let body = null
