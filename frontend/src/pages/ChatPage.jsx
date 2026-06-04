@@ -33,6 +33,7 @@ export function ChatPage() {
   const [isConnected, setIsConnected] = useState(false)
   const [isConnecting, setIsConnecting] = useState(false)
   const [loadingMessages, setLoadingMessages] = useState(false)
+  const [pollingIntervalId, setPollingIntervalId] = useState(null)
   const [reconnectAttempts, setReconnectAttempts] = useState(0)
   const reconnectTimeoutRef = useRef(null)
 
@@ -111,7 +112,8 @@ export function ChatPage() {
     setIsConnecting(true)
 
     try {
-      const socket = new SockJS('/api/ws-chat')
+      // Bypass Vite proxy - kết nối trực tiếp tới backend WebSocket
+      const socket = new SockJS('http://localhost:8080/ws-chat')
       const client = Stomp.over(socket)
       
       // Vô hiệu hóa debug output
@@ -123,6 +125,8 @@ export function ChatPage() {
         setIsConnected(true)
         setIsConnecting(false)
         setReconnectAttempts(0)
+
+        stopPolling()
         
         console.log('WebSocket connected to:', conversationId)
 
@@ -165,6 +169,8 @@ export function ChatPage() {
       clearTimeout(reconnectTimeoutRef.current)
       reconnectTimeoutRef.current = null
     }
+
+    stopPolling()
     
     if (stompClient && stompClient.connected) {
       try {
@@ -218,14 +224,64 @@ export function ChatPage() {
 
   const sendViaREST = (message) => {
     api.sendMessage(activeId, message)
-      .then(() => {
+      .then((savedMessage) => {
+        // Thêm tin vừa gửi vào state ngay (optimistic update) thay vì reload toàn bộ
+        setMessages(prev => [...prev, savedMessage])
         setContent('')
-        loadMessages(activeId)
+        
+        // Bắt đầu polling để check tin từ người khác
+        startPolling(activeId)
+        
+        // Auto scroll xuống
+        setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 100)
       })
       .catch(err => {
         console.error('REST API send error:', err)
         toast.error('Lỗi gửi tin nhắn: ' + (err.message || 'Unknown error'))
       })
+  }
+
+  // Chỉ fetch tin nhắn mới (so sánh bằng ID thay vì số lượng)
+  const addNewMessages = async (conversationId) => {
+    try {
+      const allMessages = await api.chatMessages(conversationId)
+      if (!Array.isArray(allMessages)) return
+
+      // Tạo Set ID của tin hiện tại để so sánh
+      const currentMessageIds = new Set(messages.map(m => idOf(m)))
+      
+      // Lọc ra những tin có ID không có trong currentMessageIds (tin mới)
+      const newMessages = allMessages.filter(m => !currentMessageIds.has(idOf(m)))
+      
+      // Nếu có tin mới, thêm vào
+      if (newMessages.length > 0) {
+        setMessages(prev => [...prev, ...newMessages])
+        // Auto scroll xuống
+        setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 100)
+      }
+    } catch (e) {
+      console.error('Failed to fetch new messages:', e)
+    }
+  }
+
+  const startPolling = (conversationId) => {
+    // Nếu đang polling rồi, không khởi tạo lại
+    if (pollingIntervalId) return
+
+    const interval = setInterval(() => {
+      addNewMessages(conversationId)  // Gọi hàm mới thay vì loadMessages
+    }, 2000)  // Mỗi 2 giây
+    
+    setPollingIntervalId(interval)
+    console.log('Polling started for conversation:', conversationId)
+  }
+
+  const stopPolling = () => {
+    if (pollingIntervalId) {
+      clearInterval(pollingIntervalId)
+      setPollingIntervalId(null)
+      console.log('Polling stopped')
+    }
   }
 
   const startWithSeller = async (sellerId) => {
@@ -287,7 +343,7 @@ export function ChatPage() {
         </CardContent>
       </Card>
 
-      <Card className="flex flex-col lg:col-span-2">
+      <Card className="flex flex-col lg:col-span-2 h-full">
         {activeId ? (
           <>
             {!isConnected && reconnectAttempts >= MAX_RECONNECT_ATTEMPTS && (
@@ -298,7 +354,7 @@ export function ChatPage() {
                 </p>
               </div>
             )}
-            <CardContent className="flex-1 space-y-3 overflow-y-auto p-4">
+            <CardContent className="flex-1 space-y-3 overflow-y-auto p-4 min-h-0">
               {loadingMessages ? (
                 <div className="flex items-center justify-center h-full">
                   <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
