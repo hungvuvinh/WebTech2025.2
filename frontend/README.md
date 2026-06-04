@@ -105,7 +105,7 @@ Home → ProductDetail → [Thêm giỏ] → Cart → Checkout → Orders
 ### Chat
 
 - Khách: `?seller_id=...` trên URL hoặc nút trên trang SP.
-- Poll tin nhắn mỗi 5 giây (`ChatPage.jsx`).
+- Kết nối WebSocket real-time qua `/ws-chat` và fallback REST API khi WebSocket không sẵn sàng (`ChatPage.jsx`).
 
 ---
 

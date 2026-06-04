@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { Home, LogOut, Search, ShoppingCart, Truck, User } from 'lucide-react'
+import { Home, LogOut, MessageCircle, Search, ShoppingCart, Truck, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useAuth } from '@/context/AuthContext'
@@ -57,6 +57,15 @@ export function ShopHeader() {
               >
                 <Truck className="h-6 w-6" />
                 <span>Đơn hàng</span>
+              </Link>
+            )}
+            {isLoggedIn && (
+              <Link
+                to="/chat"
+                className="flex flex-col items-center gap-0.5 text-xs text-[#1A94FF] hover:opacity-80"
+              >
+                <MessageCircle className="h-6 w-6" />
+                <span>Chat</span>
               </Link>
             )}
             <Link
