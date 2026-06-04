@@ -111,7 +111,10 @@ export function ChatPage() {
     setIsConnecting(true)
 
     try {
-      const socket = new SockJS('/api/ws-chat')
+      const socketUrl = import.meta.env.DEV
+        ? '/ws-chat'
+        : `${window.location.origin}/ws-chat`
+      const socket = new SockJS(socketUrl)
       const client = Stomp.over(socket)
       
       // Vô hiệu hóa debug output

@@ -8,7 +8,7 @@ import java.util.Optional;
 
 public interface ConversationRepository extends MongoRepository<Conversation, String> {
 
-    Optional<Conversation> findByCustomerIdAndSellerId(String customerId, String sellerId);
+    Optional<Conversation> findFirstByCustomerIdAndSellerId(String customerId, String sellerId);
 
     List<Conversation> findByCustomerIdOrderByCreatedAtDesc(String customerId);
 
