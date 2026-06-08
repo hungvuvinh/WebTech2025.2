@@ -34,7 +34,7 @@ public class ChatService {
         sellerRepository.findById(sellerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Seller", sellerId));
 
-        return conversationRepository.findByCustomerIdAndSellerId(customerId, sellerId)
+        return conversationRepository.findFirstByCustomerIdAndSellerId(customerId, sellerId)
                 .orElseGet(() -> {
                     Conversation c = new Conversation();
                     c.setCustomerId(customerId);

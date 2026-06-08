@@ -65,12 +65,12 @@ export const FEATURE_MATRIX = {
   },
   platform: {
     authentication: {
-      status: 'todo',
-      notes: 'Hiện chỉ chọn account từ list (localStorage). Cần JWT/OAuth + form đăng ký.',
+      status: 'partial',
+      notes: 'Đã có đăng ký/đăng nhập bằng email + JWT access token cơ bản. Chưa có refresh token/OAuth.',
     },
     authorization: {
-      status: 'todo',
-      notes: 'ProtectedRoute kiểm tra role client-side; backend chưa có Spring Security.',
+      status: 'partial',
+      notes: 'Đã có Spring Security + Bearer token + role check cơ bản. Chưa ràng buộc ownership chi tiết từng resource.',
     },
     errorHandling: {
       status: 'partial',
@@ -91,7 +91,7 @@ export const FEATURE_MATRIX = {
 export const NEXT_TASKS = [
   {
     priority: 'P0',
-    task: 'Tích hợp đăng nhập thật (JWT) — thay LoginPage chọn list',
+    task: 'Nâng cấp auth JWT: refresh token + logout khi token hết hạn',
     files: ['context/AuthContext.jsx', 'pages/LoginPage.jsx', 'lib/api.js'],
   },
   {

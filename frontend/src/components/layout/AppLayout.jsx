@@ -78,6 +78,13 @@ function SellerHeader() {
         <div className="ml-auto flex items-center gap-2">
           {isLoggedIn && (
             <>
+              <Link
+                to="/chat"
+                className="inline-flex items-center gap-1 rounded-md border border-[#1A94FF]/20 bg-[#f5f5fa] px-3 py-1.5 text-sm text-[#1A94FF] hover:bg-[#e8f4ff]"
+              >
+                <MessageCircle className="h-4 w-4" />
+                Chat
+              </Link>
               <span className="hidden text-sm text-muted-foreground sm:inline">{auth.userName}</span>
               <Button
                 variant="ghost"
