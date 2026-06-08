@@ -44,9 +44,8 @@ public class ReviewController extends AbstractMongoCrudController<Review> {
 
     @Override
     @PutMapping("/{id}")
-    public ResponseEntity<Review> update(@PathVariable String id, @RequestBody Review body) {
-        Review updated = reviewService.update(id, body);
-        return ResponseEntity.ok(updated);
+    public Review replace(@PathVariable String id, @RequestBody Review body) {
+        return reviewService.update(id, body);
     }
 
     @GetMapping("/product/{productId}")
