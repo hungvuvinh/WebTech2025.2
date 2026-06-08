@@ -3,6 +3,12 @@ package com.webtech.backend.controller;
 import com.webtech.backend.model.Product;
 import com.webtech.backend.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import com.webtech.backend.service.CloudinaryService;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.MediaType;
+import java.io.IOException;
+import java.util.Map;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,6 +28,7 @@ import java.util.List;
 public class ProductController extends AbstractMongoCrudController<Product> {
 
     private final ProductRepository productRepository;
+    private final CloudinaryService cloudinaryService;
 
     @Override
     protected MongoRepository<Product, String> repository() {
@@ -74,6 +81,35 @@ public class ProductController extends AbstractMongoCrudController<Product> {
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
+    // Create product with multipart form including an optional image file
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Product> createWithImage(
+            @RequestParam(name = "product_name") String productName,
+            @RequestParam(name = "brand", required = false) String brand,
+            @RequestParam(name = "category_id", required = false) String categoryId,
+            @RequestParam(name = "seller_id", required = false) String sellerId,
+            @RequestParam(name = "img_url", required = false) String imgUrl,
+            @RequestParam(name = "file", required = false) MultipartFile file
+    ) throws IOException {
+        Product body = new Product();
+        body.setId(null);
+        body.setProductName(productName);
+        body.setBrand(brand);
+        body.setCategoryId(categoryId);
+        body.setSellerId(sellerId);
+
+        // If file provided, upload to Cloudinary
+        if (file != null && !file.isEmpty()) {
+            String url = cloudinaryService.upload(file, "WebTech20252");
+            body.setImgUrl(normalizeCloudinaryUrl(url));
+        } else if (imgUrl != null && !imgUrl.isBlank()) {
+            body.setImgUrl(normalizeCloudinaryUrl(imgUrl));
+        }
+
+        Product saved = productRepository.save(body);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+    }
+
     @Override
     @PutMapping("/{id}")
     public Product replace(@PathVariable String id, @RequestBody Product body) {
@@ -85,6 +121,18 @@ public class ProductController extends AbstractMongoCrudController<Product> {
             body.setImgUrl(normalizeCloudinaryUrl(body.getImgUrl()));
         }
         return productRepository.save(body);
+    }
+
+    @PostMapping(value = "/{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Map<String, String>> uploadImage(@PathVariable String id, @RequestParam("file") MultipartFile file) throws IOException {
+        if (!productRepository.existsById(id)) {
+            throw new com.webtech.backend.exception.ResourceNotFoundException(resourceLabel(), id);
+        }
+        String url = cloudinaryService.upload(file, "WebTech20252");
+        Product p = productRepository.findById(id).orElseThrow(() -> new com.webtech.backend.exception.ResourceNotFoundException(resourceLabel(), id));
+        p.setImgUrl(normalizeCloudinaryUrl(url));
+        productRepository.save(p);
+        return ResponseEntity.ok(Map.of("imageUrl", url));
     }
 
     private String normalizeCloudinaryUrl(String url) {

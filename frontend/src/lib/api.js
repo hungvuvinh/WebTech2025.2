@@ -64,8 +64,53 @@ export const api = {
   product: (id) => request(`/products/${id}`),
   productsBySeller: (sellerId) => request(`/products/seller/${sellerId}`),
   createProduct: (body) => request('/products', { method: 'POST', body: JSON.stringify(body) }),
+  createProductWithImage: async (body, file) => {
+    const API_BASE = API
+    const auth = readAuthFromStorage()
+    const accessToken = auth?.accessToken
+    const form = new FormData()
+    form.append('product_name', body.product_name)
+    if (body.brand) form.append('brand', body.brand)
+    if (body.category_id) form.append('category_id', body.category_id)
+    if (body.seller_id) form.append('seller_id', body.seller_id)
+    if (body.img_url) form.append('img_url', body.img_url)
+    if (file) form.append('file', file)
+    const res = await fetch(`${API_BASE}/products`, {
+      method: 'POST',
+      headers: {
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+      },
+      body: form,
+    })
+    if (!res.ok) {
+      let txt = await res.text()
+      throw new Error(txt || res.statusText)
+    }
+    return res.json()
+  },
   updateProduct: (id, body) => request(`/products/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
   deleteProduct: (id) => request(`/products/${id}`, { method: 'DELETE' }),
+
+  // upload product image (multipart/form-data)
+  uploadProductImage: async (productId, file) => {
+    const auth = readAuthFromStorage()
+    const accessToken = auth?.accessToken
+    const API_BASE = API
+    const form = new FormData()
+    form.append('file', file)
+    const res = await fetch(`${API_BASE}/products/${productId}/image`, {
+      method: 'POST',
+      headers: {
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+      },
+      body: form,
+    })
+    if (!res.ok) {
+      let txt = await res.text()
+      throw new Error(txt || res.statusText)
+    }
+    return res.json()
+  },
 
   variants: () => request('/product-variants'),
   createVariant: (body) => request('/product-variants', { method: 'POST', body: JSON.stringify(body) }),

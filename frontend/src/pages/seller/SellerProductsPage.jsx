@@ -43,6 +43,8 @@ export function SellerProductsPage() {
   const [editingVariantId, setEditingVariantId] = useState(null)
   const [editingVariantForm, setEditingVariantForm] = useState({ variant_name: '', price: '', stock_quantity: '' })
   const [saving, setSaving] = useState(false)
+  const [selectedFile, setSelectedFile] = useState(null)
+  const [uploading, setUploading] = useState(false)
 
   const load = () => {
     Promise.all([api.productsBySeller(userId), api.categories(), api.variants()])
@@ -124,7 +126,12 @@ export function SellerProductsPage() {
         await api.updateProduct(idOf(editing), body)
         toast.success('Đã cập nhật sản phẩm')
       } else {
-        const created = await api.createProduct(body)
+        let created
+        if (selectedFile) {
+          created = await api.createProductWithImage(body, selectedFile)
+        } else {
+          created = await api.createProduct(body)
+        }
         const productId = idOf(created)
         await api.createVariant({
           product_id: productId,
@@ -280,12 +287,33 @@ export function SellerProductsPage() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Hình ảnh (URL Cloudinary)</Label>
-                <Input
-                  value={form.img_url}
-                  onChange={(e) => setForm({ ...form, img_url: e.target.value })}
-                  placeholder="https://res.cloudinary.com/..."
-                />
+                <Label>Tải lên hình</Label>
+                <input type="file" accept="image/*" onChange={(e) => setSelectedFile(e.target.files?.[0] || null)} />
+                <div>
+                  {editing ? (
+                    <Button
+                      className="mt-2"
+                      onClick={async () => {
+                        if (!selectedFile) return toast.error('Chọn file trước khi tải lên')
+                        setUploading(true)
+                        try {
+                          const res = await api.uploadProductImage(idOf(editing), selectedFile)
+                          setForm((f) => ({ ...f, img_url: res.imageUrl || res.imageUrl || res.imageUrl }))
+                          toast.success('Tải ảnh lên thành công')
+                        } catch (e) {
+                          toast.error(e.message)
+                        } finally {
+                          setUploading(false)
+                        }
+                      }}
+                      disabled={uploading}
+                    >
+                      {uploading ? 'Đang tải...' : 'Tải lên'}
+                    </Button>
+                  ) : (
+                    <div className="text-sm text-muted-foreground">Bạn có thể chọn file để tải lên ngay khi tạo sản phẩm.</div>
+                  )}
+                </div>
               </div>
 
               {!editing && (
