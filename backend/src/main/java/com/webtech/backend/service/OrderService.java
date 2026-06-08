@@ -2,6 +2,7 @@ package com.webtech.backend.service;
 
 import com.webtech.backend.exception.ResourceNotFoundException;
 import com.webtech.backend.model.Order;
+import com.webtech.backend.model.OrderItem;
 import com.webtech.backend.model.OrderShippingStatuses;
 import com.webtech.backend.repository.OrderRepository;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,32 @@ public class OrderService {
 
     public List<Order> findByCustomerId(String customerId) {
         return orderRepository.findByCustomerId(customerId);
+    }
+
+    public boolean hasPurchasedProduct(String customerId, String productId) {
+        if (customerId == null || productId == null) {
+            return false;
+        }
+        List<Order> orders = findByCustomerId(customerId);
+        if (orders == null) {
+            return false;
+        }
+
+        for (Order order : orders) {
+            String status = order.getStatus();
+            if (status != null && OrderShippingStatuses.CANCELLED.equalsIgnoreCase(status.trim())) {
+                continue;
+            }
+            if (order.getItems() == null) {
+                continue;
+            }
+            for (OrderItem item : order.getItems()) {
+                if (productId.equals(item.getProductId())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public List<Order> findInTransitByCustomerId(String customerId) {

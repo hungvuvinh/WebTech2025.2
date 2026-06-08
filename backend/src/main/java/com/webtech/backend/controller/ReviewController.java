@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -38,6 +39,12 @@ public class ReviewController extends AbstractMongoCrudController<Review> {
     public ResponseEntity<Review> create(@RequestBody Review body) {
         Review saved = reviewService.create(body);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Review> update(@PathVariable String id, @RequestBody Review body) {
+        Review updated = reviewService.update(id, body);
+        return ResponseEntity.ok(updated);
     }
 
     @GetMapping("/product/{productId}")

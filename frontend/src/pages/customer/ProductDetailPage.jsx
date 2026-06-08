@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
-import { Star, Flag, MessageCircle } from 'lucide-react'
+import { Star, MessageCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -23,24 +23,72 @@ export function ProductDetailPage() {
   const [qty, setQty] = useState(1)
   const [rating, setRating] = useState('5')
   const [comment, setComment] = useState('')
-  const [reportDesc, setReportDesc] = useState('')
-  const [reportType, setReportType] = useState('defect')
+  const [reviewId, setReviewId] = useState('')
+  const [isEditing, setIsEditing] = useState(false)
+  const [hasPurchased, setHasPurchased] = useState(false)
 
   const load = () => {
-    Promise.all([api.product(id), api.variants(), api.reviewsByProduct(id)])
-      .then(([p, allVariants, revs]) => {
+    const ordersRequest = isCustomer && userId ? api.ordersByCustomer(userId) : Promise.resolve([])
+
+    Promise.all([api.product(id), api.variants(), api.reviewsByProduct(id), ordersRequest])
+      .then(([p, allVariants, revs, orders]) => {
         setProduct(p)
         const vs = (allVariants || []).filter((v) => v.product_id === id)
         setVariants(vs)
         if (vs.length && !variantId) setVariantId(idOf(vs[0]))
         setReviews(Array.isArray(revs) ? revs : [])
+
+        const purchased = Array.isArray(orders)
+          && orders.some((order) =>
+            Array.isArray(order.items)
+            && order.items.some((item) => item.product_id === id)
+            && order.status !== 'CANCELLED'
+          )
+        setHasPurchased(Boolean(purchased))
       })
       .catch(() => toast.error('Không tải được sản phẩm'))
   }
 
-  useEffect(() => { load() }, [id])
+  useEffect(() => {
+    setReviewId('')
+    setRating('5')
+    setComment('')
+    setIsEditing(false)
+    load()
+  }, [id, isCustomer, userId])
 
+  useEffect(() => {
+    if (isEditing) return
+    if (!userId) {
+      if (reviewId) {
+        setReviewId('')
+      }
+      return
+    }
+
+    const existingReview = reviews.find((review) => review.customer_id === userId)
+    if (!existingReview) {
+      if (reviewId) {
+        setReviewId('')
+      }
+      return
+    }
+
+    const existingId = idOf(existingReview)
+    if (existingId !== reviewId) {
+      setReviewId(existingId)
+      setRating(String(existingReview.rating ?? 5))
+      setComment(existingReview.comment ?? '')
+      if (existingReview.product_variant_id) {
+        setVariantId(existingReview.product_variant_id)
+      }
+    }
+  }, [reviews, userId, reviewId])
+
+  const ownReview = reviews.find((review) => review.customer_id === userId)
+  const otherReviews = reviews.filter((review) => review.customer_id !== userId)
   const selectedVariant = variants.find((v) => idOf(v) === variantId)
+  const canReview = isCustomer && (ownReview || hasPurchased)
 
   const addToCart = async () => {
     if (!isCustomer) return toast.error('Vui lòng đăng nhập với tài khoản khách hàng')
@@ -60,33 +108,24 @@ export function ProductDetailPage() {
   const submitReview = async () => {
     if (!isCustomer) return toast.error('Đăng nhập để đánh giá')
     try {
-      await api.createReview({
+      const payload = {
         product_id: id,
         product_variant_id: variantId || null,
         customer_id: userId,
         rating: Number(rating),
         comment,
-      })
-      toast.success('Đã gửi đánh giá')
-      setComment('')
-      load()
-    } catch (e) {
-      toast.error(e.message)
-    }
-  }
+      }
 
-  const submitReport = async () => {
-    if (!isCustomer) return toast.error('Đăng nhập để báo lỗi')
-    try {
-      await api.createReport({
-        product_id: id,
-        customer_id: userId,
-        description: reportDesc,
-        report_type: reportType,
-        created_at: new Date().toISOString(),
-      })
-      toast.success('Đã gửi báo cáo')
-      setReportDesc('')
+      if (reviewId) {
+        await api.updateReview(reviewId, payload)
+        toast.success('Đã cập nhật đánh giá')
+      } else {
+        await api.createReview(payload)
+        toast.success('Đã gửi đánh giá')
+      }
+
+      setIsEditing(false)
+      load()
     } catch (e) {
       toast.error(e.message)
     }
@@ -163,7 +202,29 @@ export function ProductDetailPage() {
               <Star className="h-5 w-5 text-[#FFB800]" />
               Đánh giá sản phẩm
             </h2>
-            {isCustomer && (
+            {isCustomer && ownReview && !isEditing && (
+              <div className="mb-4 rounded-lg border border-[#ebebf0] bg-[#f5f5fa] p-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold">Đánh giá của bạn</p>
+                    <p className="mt-2 text-sm">
+                      <span className="font-medium text-[#FFB800]">{ownReview.rating}★</span>
+                      {ownReview.comment ? ` — ${ownReview.comment}` : ''}
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">{formatDate(ownReview.created_at)}</p>
+                  </div>
+                  <Button size="sm" variant="outline" onClick={() => setIsEditing(true)}>
+                    Sửa đánh giá
+                  </Button>
+                </div>
+              </div>
+            )}
+            {isCustomer && !ownReview && !hasPurchased && (
+              <div className="mb-4 rounded-lg border border-[#ebebf0] bg-[#f5f5fa] p-3 text-sm text-muted-foreground">
+                Bạn chỉ có thể đánh giá sản phẩm sau khi mua.
+              </div>
+            )}
+            {isCustomer && (isEditing || !ownReview) && canReview && (
               <div className="mb-4 space-y-2 rounded-lg border border-[#ebebf0] bg-[#f5f5fa] p-3">
                 <Label>Điểm (1-5)</Label>
                 <Select value={rating} onValueChange={setRating}>
@@ -175,40 +236,44 @@ export function ProductDetailPage() {
                   </SelectContent>
                 </Select>
                 <Textarea placeholder="Nhận xét..." value={comment} onChange={(e) => setComment(e.target.value)} />
-                <Button size="sm" className="bg-[#1A94FF]" onClick={submitReview}>Gửi đánh giá</Button>
+                <div className="flex gap-2">
+                  <Button size="sm" className="bg-[#1A94FF]" onClick={submitReview}>
+                    {reviewId ? 'Cập nhật đánh giá' : 'Gửi đánh giá'}
+                  </Button>
+                  {isEditing && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setIsEditing(false)
+                        if (ownReview) {
+                          setRating(String(ownReview.rating ?? 5))
+                          setComment(ownReview.comment ?? '')
+                          if (ownReview.product_variant_id) {
+                            setVariantId(ownReview.product_variant_id)
+                          }
+                        }
+                      }}
+                    >
+                      Hủy
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
             <ul className="max-h-48 space-y-2 overflow-y-auto">
-              {reviews.map((r) => (
+              {otherReviews.map((r) => (
                 <li key={idOf(r)} className="rounded border border-[#ebebf0] p-2 text-sm">
                   <span className="font-medium text-[#FFB800]">{r.rating}★</span> — {r.comment || '(không có nội dung)'}
                   <p className="text-xs text-muted-foreground">{formatDate(r.created_at)}</p>
                 </li>
               ))}
-              {reviews.length === 0 && <p className="text-sm text-muted-foreground">Chưa có đánh giá</p>}
+              {reviews.length === 0 && (
+                <p className="text-sm text-muted-foreground">Chưa có đánh giá</p>
+              )}
             </ul>
           </ShopPanel>
 
-          <ShopPanel>
-            <h2 className="mb-3 flex items-center gap-2 text-lg font-bold">
-              <Flag className="h-5 w-5 text-[#FF424E]" />
-              Báo lỗi sản phẩm
-            </h2>
-            <div className="space-y-3">
-              <Select value={reportType} onValueChange={setReportType}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="defect">Lỗi sản phẩm</SelectItem>
-                  <SelectItem value="wrong_info">Sai thông tin</SelectItem>
-                  <SelectItem value="other">Khác</SelectItem>
-                </SelectContent>
-              </Select>
-              <Textarea placeholder="Mô tả lỗi..." value={reportDesc} onChange={(e) => setReportDesc(e.target.value)} />
-              <Button variant="destructive" size="sm" onClick={submitReport} disabled={!reportDesc.trim()}>
-                Gửi báo cáo
-              </Button>
-            </div>
-          </ShopPanel>
         </div>
       </div>
     </ShopPage>
