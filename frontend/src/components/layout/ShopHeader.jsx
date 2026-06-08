@@ -68,15 +68,17 @@ export function ShopHeader() {
                 <span>Chat</span>
               </Link>
             )}
-            <Link
-              to={isLoggedIn ? (isCustomer ? '/orders' : '/seller/products') : '/login'}
-              className="flex flex-col items-center gap-0.5 text-xs text-[#1A94FF] hover:opacity-80"
-            >
-              <User className="h-6 w-6" />
-              <span className="max-w-[72px] truncate">
-                {isLoggedIn ? userName?.split(' ')[0] || 'Tài khoản' : 'Đăng nhập'}
-              </span>
-            </Link>
+            {!(isLoggedIn && isCustomer) && (
+              <Link
+                to={isLoggedIn ? (isCustomer ? '/orders' : '/seller/products') : '/login'}
+                className="flex flex-col items-center gap-0.5 text-xs text-[#1A94FF] hover:opacity-80"
+              >
+                <User className="h-6 w-6" />
+                <span className="max-w-[72px] truncate">
+                  {isLoggedIn ? userName?.split(' ')[0] || 'Tài khoản' : 'Đăng nhập'}
+                </span>
+              </Link>
+            )}
             <Link
               to={isLoggedIn && isCustomer ? '/cart' : '/login'}
               className="flex flex-col items-center gap-0.5 text-xs text-[#1A94FF] hover:opacity-80"
