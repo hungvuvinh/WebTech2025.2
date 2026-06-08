@@ -35,12 +35,14 @@ public class ReviewController extends AbstractMongoCrudController<Review> {
         return "Review";
     }
 
+    @Override
     @PostMapping
     public ResponseEntity<Review> create(@RequestBody Review body) {
         Review saved = reviewService.create(body);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
+    @Override
     @PutMapping("/{id}")
     public ResponseEntity<Review> update(@PathVariable String id, @RequestBody Review body) {
         Review updated = reviewService.update(id, body);
