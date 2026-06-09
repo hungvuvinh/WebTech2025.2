@@ -57,9 +57,26 @@ async function request(path, options = {}) {
   return text ? JSON.parse(text) : null
 }
 
+function normalizeListResponse(data) {
+  if (Array.isArray(data)) return data
+
+  if (!data || typeof data !== 'object') return []
+
+  const candidateKeys = ['categories', 'data', 'items', 'results', 'content']
+  for (const key of candidateKeys) {
+    if (Array.isArray(data[key])) return data[key]
+  }
+
+  for (const value of Object.values(data)) {
+    if (Array.isArray(value)) return value
+  }
+
+  return []
+}
+
 export const api = {
   // --- Danh mục & sản phẩm ---
-  categories: () => request('/categories'),
+  categories: async () => normalizeListResponse(await request('/categories')),
   products: () => request('/products'),
   product: (id) => request(`/products/${id}`),
   productsBySeller: (sellerId) => request(`/products/seller/${sellerId}`),

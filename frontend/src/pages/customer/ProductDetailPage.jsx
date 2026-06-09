@@ -143,8 +143,16 @@ export function ProductDetailPage() {
     <ShopPage className="space-y-4">
       <div className="grid gap-4 lg:grid-cols-2">
         <ShopPanel>
-          <div className="mb-4 flex aspect-square max-h-80 items-center justify-center rounded-lg bg-gradient-to-br from-[#e8f4ff] to-[#f5f5fa] text-6xl">
-            📦
+          <div className="mb-4 flex aspect-square max-h-80 items-center justify-center rounded-lg bg-gradient-to-br from-[#e8f4ff] to-[#f5f5fa]">
+            {product.img_url ? (
+              <img
+                src={product.img_url}
+                alt={product.product_name || product.productName || 'Product image'}
+                className="h-full w-full rounded-lg object-contain"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-6xl">📦</div>
+            )}
           </div>
           <h1 className="text-2xl font-bold">{productName(product)}</h1>
           {product.brand && <Badge className="mt-2">{product.brand}</Badge>}
