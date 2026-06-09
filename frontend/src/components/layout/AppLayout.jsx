@@ -52,11 +52,12 @@ function NavItems({ links, className }) {
 }
 
 /** Header cửa hàng cho khách; header riêng cho khu vực người bán */
-function useShopLayout() {
+function useShopLayout(role) {
   const { pathname } = useLocation()
-  // Show seller header only for seller dashboard routes (exact '/seller' or '/seller/...').
-  // This avoids matching the public shop route '/sellers/:id' (note the plural).
+  // Shop header for public customer pages, except seller dashboard and seller chat.
+  // This avoids matching the public shop route '/sellers/:id' (plural) and handles '/chat' for sellers.
   if (/^\/seller(\/|$)/.test(pathname)) return false
+  if (pathname === '/chat' && role === 'seller') return false
   return true
 }
 
@@ -78,13 +79,6 @@ function SellerHeader() {
         <div className="ml-auto flex items-center gap-2">
           {isLoggedIn && (
             <>
-              <Link
-                to="/chat"
-                className="inline-flex items-center gap-1 rounded-md border border-[#1A94FF]/20 bg-[#f5f5fa] px-3 py-1.5 text-sm text-[#1A94FF] hover:bg-[#e8f4ff]"
-              >
-                <MessageCircle className="h-4 w-4" />
-                Chat
-              </Link>
               <span className="hidden text-sm text-muted-foreground sm:inline">{auth.userName}</span>
               <Button
                 variant="ghost"
@@ -108,7 +102,7 @@ function SellerHeader() {
 export function AppLayout() {
   const { pathname } = useLocation()
   const { isLoggedIn, role } = useAuth()
-  const shopLayout = useShopLayout()
+  const shopLayout = useShopLayout(role)
   const links = navLinksForRole(role)
 
   return (

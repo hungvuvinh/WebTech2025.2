@@ -160,6 +160,7 @@ export const api = {
   // --- Đánh giá & báo cáo ---
   reviewsByProduct: (productId) => request(`/reviews/product/${productId}`),
   createReview: (body) => request('/reviews', { method: 'POST', body: JSON.stringify(body) }),
+  updateReview: (reviewId, body) => request(`/reviews/${reviewId}`, { method: 'PUT', body: JSON.stringify(body) }),
 
   createReport: (body) => request('/reports', { method: 'POST', body: JSON.stringify(body) }),
 
