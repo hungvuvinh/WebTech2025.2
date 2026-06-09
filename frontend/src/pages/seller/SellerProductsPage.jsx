@@ -44,15 +44,20 @@ export function SellerProductsPage() {
   const [editingVariantForm, setEditingVariantForm] = useState({ variant_name: '', price: '', stock_quantity: '' })
   const [saving, setSaving] = useState(false)
   const [selectedFile, setSelectedFile] = useState(null)
+  const [previewUrl, setPreviewUrl] = useState('')
   const [uploading, setUploading] = useState(false)
 
   const load = () => {
     Promise.all([api.productsBySeller(userId), api.categories(), api.variants()])
       .then(([p, c, v]) => {
-        setProducts(p || [])
-        setCategories(c || [])
-        const productIds = new Set((p || []).map((pr) => idOf(pr)))
-        setVariants((v || []).filter((x) => productIds.has(x.product_id)))
+        const safeProducts = Array.isArray(p) ? p : []
+        const safeCategories = Array.isArray(c) ? c : []
+        const safeVariants = Array.isArray(v) ? v : []
+
+        setProducts(safeProducts)
+        setCategories(safeCategories)
+        const productIds = new Set(safeProducts.map((pr) => idOf(pr)))
+        setVariants(safeVariants.filter((x) => productIds.has(x.product_id)))
       })
       .catch(() => toast.error('Không tải được sản phẩm'))
   }
@@ -64,6 +69,12 @@ export function SellerProductsPage() {
     }
     load()
   }, [userId, isSeller, navigate])
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl?.startsWith('blob:')) URL.revokeObjectURL(previewUrl)
+    }
+  }, [previewUrl])
 
   const openCreate = () => {
     setEditing(null)
@@ -109,6 +120,18 @@ export function SellerProductsPage() {
       }
     }
     return true
+  }
+
+  const getCategoryLabel = (category) =>
+    category?.category_name || category?.categoryName || category?.name || 'Danh mục'
+
+  const handleImageSelect = (event) => {
+    const file = event.target.files?.[0] || null
+
+    if (previewUrl?.startsWith('blob:')) URL.revokeObjectURL(previewUrl)
+
+    setSelectedFile(file)
+    setPreviewUrl(file ? URL.createObjectURL(file) : '')
   }
 
   const saveProduct = async () => {
@@ -275,30 +298,62 @@ export function SellerProductsPage() {
                 <Label>Danh mục *</Label>
                 <Select value={form.category_id} onValueChange={(v) => setForm({ ...form, category_id: v })}>
                   <SelectTrigger>
-                    <SelectValue placeholder={categories.length ? 'Chọn danh mục' : 'Chưa có danh mục — tạo qua API'} />
+                    <SelectValue placeholder={categories.length ? 'Chọn danh mục' : 'Chưa có danh mục, vui lòng tạo danh mục trước'} />
                   </SelectTrigger>
                   <SelectContent>
-                    {categories.map((c) => (
-                      <SelectItem key={idOf(c)} value={idOf(c)}>
-                        {c.category_name || c.categoryName}
-                      </SelectItem>
-                    ))}
+                    {categories
+                      .filter((c) => c && (idOf(c) || getCategoryLabel(c)))
+                      .map((c, index) => (
+                        <SelectItem key={idOf(c) || `${getCategoryLabel(c)}-${index}`} value={idOf(c) || ''}>
+                          {getCategoryLabel(c)}
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Tải lên hình</Label>
-                <input type="file" accept="image/*" onChange={(e) => setSelectedFile(e.target.files?.[0] || null)} />
+                <Label>Tải ảnh sản phẩm</Label>
+                <div className="rounded-xl border border-dashed border-[#1A94FF]/60 bg-[#f7fbff] p-3">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-medium">Chọn ảnh từ máy của bạn</p>
+                      <p className="text-xs text-muted-foreground">PNG, JPG, WebP. Ảnh sẽ hiển thị rõ hơn khi bán hàng.</p>
+                    </div>
+                    <Button asChild variant="outline" className="shrink-0 border-[#1A94FF] text-[#1A94FF] hover:bg-[#eaf5ff]">
+                      <label htmlFor="product-image-input" className="cursor-pointer">Chọn ảnh</label>
+                    </Button>
+                  </div>
+                  <input
+                    id="product-image-input"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleImageSelect}
+                  />
+                  <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+                    <span className="rounded-full bg-white px-2 py-1 shadow-sm">{selectedFile ? selectedFile.name : 'Chưa có ảnh được chọn'}</span>
+                    {selectedFile && <span className="text-[#1A94FF]">{(selectedFile.size / 1024).toFixed(1)} KB</span>}
+                  </div>
+                  {(previewUrl || form.img_url) && (
+                    <div className="mt-3 rounded-lg border bg-white p-2 shadow-sm">
+                      <img
+                        src={previewUrl || form.img_url}
+                        alt="Preview sản phẩm"
+                        className="h-24 w-full rounded-md object-cover"
+                      />
+                    </div>
+                  )}
+                </div>
                 <div>
                   {editing ? (
                     <Button
-                      className="mt-2"
+                      className="mt-2 w-full bg-[#1A94FF] hover:bg-[#0b74e5]"
                       onClick={async () => {
                         if (!selectedFile) return toast.error('Chọn file trước khi tải lên')
                         setUploading(true)
                         try {
                           const res = await api.uploadProductImage(idOf(editing), selectedFile)
-                          setForm((f) => ({ ...f, img_url: res.imageUrl || res.imageUrl || res.imageUrl }))
+                          setForm((f) => ({ ...f, img_url: res.imageUrl || res.img_url || res.url || '' }))
                           toast.success('Tải ảnh lên thành công')
                         } catch (e) {
                           toast.error(e.message)
@@ -308,10 +363,10 @@ export function SellerProductsPage() {
                       }}
                       disabled={uploading}
                     >
-                      {uploading ? 'Đang tải...' : 'Tải lên'}
+                      {uploading ? 'Đang tải...' : 'Tải ảnh lên'}
                     </Button>
                   ) : (
-                    <div className="text-sm text-muted-foreground">Bạn có thể chọn file để tải lên ngay khi tạo sản phẩm.</div>
+                    <div className="text-xs text-muted-foreground">Bạn có thể chọn ảnh ngay khi tạo sản phẩm để sản phẩm hiện rõ hơn.</div>
                   )}
                 </div>
               </div>
