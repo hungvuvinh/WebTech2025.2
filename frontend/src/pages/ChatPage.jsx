@@ -113,7 +113,9 @@ export function ChatPage() {
 
     try {
       // Bypass Vite proxy - kết nối trực tiếp tới backend WebSocket
-      const socket = new SockJS('http://localhost:8080/ws-chat')
+      const backendBase = (import.meta.env.VITE_API_BASE || '/api').replace(/\/api$/, '')
+      const sockUrl = backendBase ? `${backendBase}/ws-chat` : '/ws-chat'
+      const socket = new SockJS(sockUrl)
       const client = Stomp.over(socket)
       
       // Vô hiệu hóa debug output

@@ -80,6 +80,15 @@ export function CartPage() {
     const quantity = Number(nextQuantity)
     if (!Number.isFinite(quantity)) return
 
+    const variant = variantMap[item.product_variant_id]
+    const availableStock = variant?.stock_quantity ?? 0
+
+    // Prevent quantity from exceeding available stock
+    if (quantity > availableStock) {
+      toast.error(`Chỉ còn ${availableStock} sản phẩm tồn kho. Không thể thêm quá số lượng này.`)
+      return
+    }
+
     try {
       const updatedCart = await api.updateCartItemQuantity(userId, item.product_variant_id, {
         product_id: item.product_id,
@@ -140,8 +149,10 @@ export function CartPage() {
               const p = productMap[item.product_id]
               const v = variantMap[item.product_variant_id]
               const checked = selectedVariantIds.includes(item.product_variant_id)
+              const availableStock = v?.stock_quantity ?? 0
+              const isQuantityExceedsStock = item.quantity > availableStock
               return (
-                <Card key={`${item.product_variant_id}-${idx}`}>
+                <Card key={`${item.product_variant_id}-${idx}`} className={isQuantityExceedsStock ? 'border-red-300 bg-red-50' : ''}>
                   <CardHeader className="py-4">
                     <div className="flex items-start gap-3">
                       <input
@@ -156,6 +167,9 @@ export function CartPage() {
                         </CardTitle>
                         <p className="text-sm text-muted-foreground">
                           {v?.variant_name} × {item.quantity}
+                        </p>
+                        <p className={`text-xs mt-1 font-medium ${isQuantityExceedsStock ? 'text-red-600' : 'text-green-600'}`}>
+                          {isQuantityExceedsStock ? `❌ Vượt quá tồn kho (chỉ còn ${availableStock})` : `✓ Tồn kho: ${availableStock}`}
                         </p>
                         <div className="mt-3 flex flex-wrap items-center gap-2">
                           <Button
@@ -173,6 +187,8 @@ export function CartPage() {
                             variant="outline"
                             size="sm"
                             onClick={() => updateQuantity(item, (item.quantity ?? 0) + 1)}
+                            disabled={item.quantity >= availableStock}
+                            title={item.quantity >= availableStock ? `Chỉ còn ${availableStock} sản phẩm` : ''}
                           >
                             +
                           </Button>
